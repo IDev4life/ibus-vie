@@ -20,19 +20,18 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            deb_arch: amd64
             artifact_arch: amd64
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
-            deb_arch: arm64
             artifact_arch: arm64
             cross: true
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@v1
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
 
       - uses: Swatinem/rust-cache@v2
@@ -50,10 +49,11 @@ jobs:
         run: cargo build --release --workspace --target ${{ matrix.target }}
 
       - name: Package tar.gz
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           TARGET_DIR=target/${{ matrix.target }}/release
-          VERSION=${{ github.event.release.tag_name }}
-          VERSION=${VERSION#v}
+          VERSION=${TAG#v}
           ARCHIVE=ibus-vie-${VERSION}-${{ matrix.artifact_arch }}.tar.gz
           tar -czf "$ARCHIVE" \
             -C "$TARGET_DIR" \
@@ -61,12 +61,17 @@ jobs:
             ibus-vie-cli
           echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
 
+      - name: Install cargo-deb
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-deb
+
       - name: Package deb
         run: |
-          cargo install cargo-deb
           sed 's|@LIBEXEC@|/usr/libexec|g' data/vie.xml.in > data/vie.xml
           cargo deb -p ibus-vie-engine --no-build --target ${{ matrix.target }}
-          DEB=$(ls target/${{ matrix.target }}/debian/ibus-vie_*.deb)
+          DEB=$(ls target/${{ matrix.target }}/debian/ibus-vie_*.deb 2>/dev/null)
+          [[ -f "$DEB" ]] || { echo "::error::deb not found"; exit 1; }
           echo "DEB=$DEB" >> $GITHUB_ENV
 
       - name: Upload to release
@@ -78,11 +83,9 @@ jobs:
 
   checksums:
     name: Generate checksums
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
