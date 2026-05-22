@@ -190,8 +190,8 @@ impl IbusEngineImpl {
                 let preedit = self.engine.preedit().to_string();
                 let prev = self.prev_committed_chars;
                 if prev > 0 {
-                    let _ = Self::delete_surrounding_text(&emitter, -(prev as i32), prev as u32)
-                        .await;
+                    let _ =
+                        Self::delete_surrounding_text(&emitter, -(prev as i32), prev as u32).await;
                 }
                 let _ =
                     Self::commit_text(&emitter, super::ibus_text::ibus_text_value(&preedit)).await;
@@ -251,8 +251,5 @@ impl IbusEngineImpl {
     ) -> zbus::Result<()>;
 
     #[zbus(signal)]
-    pub async fn update_property(
-        emitter: &SignalEmitter<'_>,
-        prop: Value<'_>,
-    ) -> zbus::Result<()>;
+    pub async fn update_property(emitter: &SignalEmitter<'_>, prop: Value<'_>) -> zbus::Result<()>;
 }

@@ -85,9 +85,7 @@ impl EngineFactory {
         server
             .at(path.as_str(), IbusService)
             .await
-            .map_err(|e| {
-                zbus::fdo::Error::Failed(format!("failed to register service: {}", e))
-            })?;
+            .map_err(|e| zbus::fdo::Error::Failed(format!("failed to register service: {}", e)))?;
 
         let object_path = zbus::zvariant::OwnedObjectPath::try_from(path)
             .map_err(|e| zbus::fdo::Error::Failed(format!("invalid path: {}", e)))?;
