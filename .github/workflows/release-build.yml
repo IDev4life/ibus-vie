@@ -77,9 +77,12 @@ jobs:
           echo "DEB=$DEB" >> $GITHUB_ENV
 
       - name: Upload to release
+        env:
+          ARCHIVE: ${{ env.ARCHIVE }}
+          DEB: ${{ env.DEB }}
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
-            "${{ env.ARCHIVE }}" "${{ env.DEB }}" --clobber
+            "$ARCHIVE" "$DEB" --clobber
 
   checksums:
     name: Generate checksums
