@@ -3,6 +3,8 @@ use tracing::{debug, info};
 use zbus::object_server::SignalEmitter;
 use zbus::zvariant::Value;
 
+use super::factory;
+use super::props;
 use super::signals;
 
 /// IBus Engine interface implementation.
@@ -140,8 +142,12 @@ impl IbusEngineImpl {
         debug!("engine reset");
     }
 
-    fn enable(&mut self) {
-        debug!(method = %self.method, "engine enabled");
+    async fn enable(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
+        let prop_list = props::method_prop_list(&self.method);
+        match Self::register_properties(&emitter, prop_list).await {
+            Ok(()) => debug!(method = %self.method, "engine enabled, properties registered"),
+            Err(e) => tracing::error!("register_properties failed: {}", e),
+        }
     }
 
     fn disable(&mut self) {
@@ -152,7 +158,63 @@ impl IbusEngineImpl {
 
     fn set_cursor_location(&self, _x: i32, _y: i32, _w: i32, _h: i32) {}
 
-    fn property_activate(&self, _prop_name: &str, _prop_state: u32) {}
+    fn set_capabilities(&self, _caps: u32) {}
+
+    fn panel_extension_register_keys(&self, _data: Value<'_>) {}
+
+    async fn property_activate(
+        &mut self,
+        #[zbus(signal_emitter)] emitter: SignalEmitter<'_>,
+        prop_name: &str,
+        prop_state: u32,
+    ) {
+        // Only act on CHECKED state (1). IBus sends activate for both the
+        // newly-checked and the newly-unchecked radio items.
+        if prop_state != 1 {
+            return;
+        }
+
+        let new_method = match prop_name {
+            "method-telex" => "telex",
+            "method-vni" => "vni",
+            _ => return,
+        };
+
+        if new_method == self.method {
+            return;
+        }
+
+        // Commit any pending preedit before switching
+        if !self.engine.preedit().is_empty() {
+            if self.has_surrounding_text {
+                let preedit = self.engine.preedit().to_string();
+                let prev = self.prev_committed_chars;
+                if prev > 0 {
+                    let _ = Self::delete_surrounding_text(&emitter, -(prev as i32), prev as u32)
+                        .await;
+                }
+                let _ =
+                    Self::commit_text(&emitter, super::ibus_text::ibus_text_value(&preedit)).await;
+            } else {
+                signals::commit_pending_preedit(self, &emitter).await;
+            }
+        }
+
+        // Switch method and persist to shared state
+        self.method = new_method.to_string();
+        self.engine = match new_method {
+            "vni" => Box::new(VniEngine::new()),
+            _ => Box::new(TelexEngine::new()),
+        };
+        self.prev_committed_chars = 0;
+        factory::set_active_method(new_method);
+
+        // Update the property menu to reflect new selection
+        let updated_prop = props::method_menu_property(new_method);
+        let _ = Self::update_property(&emitter, updated_prop).await;
+
+        info!("switched method to {}", new_method);
+    }
 
     fn destroy(&mut self) {
         debug!("engine destroyed");
@@ -180,5 +242,17 @@ impl IbusEngineImpl {
         emitter: &SignalEmitter<'_>,
         offset: i32,
         nchars: u32,
+    ) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    pub async fn register_properties(
+        emitter: &SignalEmitter<'_>,
+        props: Value<'_>,
+    ) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    pub async fn update_property(
+        emitter: &SignalEmitter<'_>,
+        prop: Value<'_>,
     ) -> zbus::Result<()>;
 }

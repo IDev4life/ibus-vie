@@ -11,26 +11,15 @@
 
   <engines>
     <engine>
-      <name>vie-telex</name>
+      <name>ibus-vie</name>
       <language>vi</language>
       <license>GPL-3.0-or-later</license>
       <author>dev1sme</author>
       <layout>us</layout>
-      <longname>Vietnamese (ibus-vie — Telex)</longname>
-      <description>Vietnamese Telex input via ibus-vie</description>
-      <symbol>VI</symbol>
+      <longname>ibus-vie</longname>
+      <description>Vietnamese input via ibus-vie (Telex/VNI)</description>
+      <symbol>vi</symbol>
       <rank>50</rank>
-    </engine>
-    <engine>
-      <name>vie-vni</name>
-      <language>vi</language>
-      <license>GPL-3.0-or-later</license>
-      <author>dev1sme</author>
-      <layout>us</layout>
-      <longname>Vietnamese (ibus-vie — VNI)</longname>
-      <description>Vietnamese VNI input via ibus-vie</description>
-      <symbol>VI</symbol>
-      <rank>49</rank>
     </engine>
   </engines>
 </component>

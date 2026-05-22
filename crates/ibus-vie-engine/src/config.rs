@@ -6,7 +6,7 @@ use tracing::warn;
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
 pub struct Config {
-    /// Default input method: "telex", "vni", or "viqr"
+    /// Default input method: "telex" or "vni"
     pub method: String,
     /// Tone placement style: "new" (hòa) or "old" (hoà)
     pub tone_style: String,
