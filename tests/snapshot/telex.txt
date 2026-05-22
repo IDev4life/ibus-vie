@@ -1,0 +1,36 @@
+# Telex test cases
+# Format: input<TAB>expected
+# Lines starting with # are comments
+vieetj	việt
+tieengs	tiếng
+ddi	đi
+chaof	chào
+ddaau	đâu
+nguwowif	người
+xin	xin
+hoaf	hoà
+khoor	khỏ
+thuees	thuế
+truwowngf	trường
+Vieetj	Việt
+DDi	Đi
+ddoongf	đồng
+lawm	lắm
+mawns	mắn
+nhuwng	nhưng
+tuwj	tự
+laij	lại
+moois	mối
+cuoocj	cuộc
+buooir	buổi
+saangs	sáng
+chieeuf	chiều
+toois	tối
+ddeemj	đệm
+thawngr	thẳng
+khoeer	khoẻ
+giuwax	giữa
+nguwowij	người
+dduwowcj	được
+nhuwngx	nhưng
+thaays	tháy

@@ -1,0 +1,16 @@
+[package]
+name = "ibus-vie-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI debugging tool for ibus-vie input method FSM"
+
+[[bin]]
+name = "ibus-vie-cli"
+path = "src/main.rs"
+
+[dependencies]
+ibus-vie-im = { path = "../ibus-vie-im" }
+clap.workspace = true

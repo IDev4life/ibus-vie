@@ -1,0 +1,10 @@
+[package]
+name = "ibus-vie-vi"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Vietnamese syllable rules and tone placement for ibus-vie"
+
+[dependencies]

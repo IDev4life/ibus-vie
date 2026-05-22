@@ -1,0 +1,15 @@
+# VNI test cases
+# Format: input<TAB>expected
+# Lines starting with # are comments
+vie6t5	việt
+d9i	đi
+d9a6u	đâu
+xin	xin
+ba2n	bàn
+to6i1	tối
+sa1ng	sáng
+chie6u2	chiều
+ngu7o7i2	người
+thu7o7ng2	thường
+la8m1	lắm
+tu75	tự
