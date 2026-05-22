@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-gnu
             artifact_arch: amd64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             target: aarch64-unknown-linux-gnu
             artifact_arch: arm64
             cross: true
@@ -51,10 +51,11 @@ jobs:
       - name: Package tar.gz
         env:
           TAG: ${{ github.event.release.tag_name }}
+          ARCH: ${{ matrix.artifact_arch }}
         run: |
           TARGET_DIR=target/${{ matrix.target }}/release
           VERSION=${TAG#v}
-          ARCHIVE=ibus-vie-${VERSION}-${{ matrix.artifact_arch }}.tar.gz
+          ARCHIVE=ibus-vie-${VERSION}-${ARCH}.tar.gz
           tar -czf "$ARCHIVE" \
             -C "$TARGET_DIR" \
             ibus-vie-engine \
@@ -70,7 +71,7 @@ jobs:
         run: |
           sed 's|@LIBEXEC@|/usr/libexec|g' data/vie.xml.in > data/vie.xml
           cargo deb -p ibus-vie-engine --no-build --target ${{ matrix.target }}
-          DEB=$(find target/${{ matrix.target }}/debian/ -name 'ibus-vie_*.deb' | sort -r | head -1)
+          DEB=$(find target/${{ matrix.target }}/debian/ -maxdepth 1 -name 'ibus-vie_*.deb')
           [[ -f "$DEB" ]] || { echo "::error::deb not found"; exit 1; }
           echo "DEB=$DEB" >> $GITHUB_ENV
 
@@ -83,7 +84,7 @@ jobs:
 
   checksums:
     name: Generate checksums
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     steps:
       - name: Download release assets
