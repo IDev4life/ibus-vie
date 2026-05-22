@@ -78,7 +78,12 @@ impl VniEngine {
             }
             '9' => {
                 // d9->đ (special: consonant, not vowel)
-                if composed.chars().last().map(|ch| ch == 'd' || ch == 'D').unwrap_or(false) {
+                if composed
+                    .chars()
+                    .last()
+                    .map(|ch| ch == 'd' || ch == 'D')
+                    .unwrap_or(false)
+                {
                     return Some(('d', 'đ'));
                 }
                 None

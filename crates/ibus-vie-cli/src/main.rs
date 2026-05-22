@@ -1,5 +1,5 @@
 use clap::Parser;
-use ibus_vie_im::{Engine, TelexEngine, VniEngine, ViqrEngine};
+use ibus_vie_im::{Engine, TelexEngine, ViqrEngine, VniEngine};
 use std::io::{self, BufRead, Write};
 
 #[derive(Parser, Debug)]
@@ -39,10 +39,7 @@ fn main() {
     }
 
     // Interactive mode
-    println!(
-        "ibus-vie-cli ({}). Gõ vào, Ctrl+D để thoát.",
-        cli.method
-    );
+    println!("ibus-vie-cli ({}). Gõ vào, Ctrl+D để thoát.", cli.method);
 
     let stdin = io::stdin();
     let stdout = io::stdout();

@@ -42,9 +42,24 @@ impl TelexEngine {
                     let ch = chars[i].to_lowercase().next().unwrap_or(chars[i]);
                     let base = ibus_vie_vi::tone::base_vowel(ch);
                     match base {
-                        'u' => return Some(MarkAction { base: 'u', target: 'ư' }),
-                        'o' => return Some(MarkAction { base: 'o', target: 'ơ' }),
-                        'a' => return Some(MarkAction { base: 'a', target: 'ă' }),
+                        'u' => {
+                            return Some(MarkAction {
+                                base: 'u',
+                                target: 'ư',
+                            })
+                        }
+                        'o' => {
+                            return Some(MarkAction {
+                                base: 'o',
+                                target: 'ơ',
+                            })
+                        }
+                        'a' => {
+                            return Some(MarkAction {
+                                base: 'a',
+                                target: 'ă',
+                            })
+                        }
                         _ => continue,
                     }
                 }
@@ -52,33 +67,60 @@ impl TelexEngine {
             }
             'a' => {
                 // 'aa' -> â
-                if composed.chars().last().map(|ch| {
-                    let b = ibus_vie_vi::tone::base_vowel(ch.to_lowercase().next().unwrap_or(ch));
-                    b == 'a'
-                }).unwrap_or(false) {
-                    Some(MarkAction { base: 'a', target: 'â' })
+                if composed
+                    .chars()
+                    .last()
+                    .map(|ch| {
+                        let b =
+                            ibus_vie_vi::tone::base_vowel(ch.to_lowercase().next().unwrap_or(ch));
+                        b == 'a'
+                    })
+                    .unwrap_or(false)
+                {
+                    Some(MarkAction {
+                        base: 'a',
+                        target: 'â',
+                    })
                 } else {
                     None
                 }
             }
             'e' => {
                 // 'ee' -> ê
-                if composed.chars().last().map(|ch| {
-                    let b = ibus_vie_vi::tone::base_vowel(ch.to_lowercase().next().unwrap_or(ch));
-                    b == 'e'
-                }).unwrap_or(false) {
-                    Some(MarkAction { base: 'e', target: 'ê' })
+                if composed
+                    .chars()
+                    .last()
+                    .map(|ch| {
+                        let b =
+                            ibus_vie_vi::tone::base_vowel(ch.to_lowercase().next().unwrap_or(ch));
+                        b == 'e'
+                    })
+                    .unwrap_or(false)
+                {
+                    Some(MarkAction {
+                        base: 'e',
+                        target: 'ê',
+                    })
                 } else {
                     None
                 }
             }
             'o' => {
                 // 'oo' -> ô
-                if composed.chars().last().map(|ch| {
-                    let b = ibus_vie_vi::tone::base_vowel(ch.to_lowercase().next().unwrap_or(ch));
-                    b == 'o'
-                }).unwrap_or(false) {
-                    Some(MarkAction { base: 'o', target: 'ô' })
+                if composed
+                    .chars()
+                    .last()
+                    .map(|ch| {
+                        let b =
+                            ibus_vie_vi::tone::base_vowel(ch.to_lowercase().next().unwrap_or(ch));
+                        b == 'o'
+                    })
+                    .unwrap_or(false)
+                {
+                    Some(MarkAction {
+                        base: 'o',
+                        target: 'ô',
+                    })
                 } else {
                     None
                 }
@@ -86,11 +128,19 @@ impl TelexEngine {
             'd' => {
                 // 'dd' -> đ
                 // Check if composed ends with 'd' or 'D'
-                if composed.chars().last().map(|ch| ch.to_lowercase().next().unwrap_or(ch) == 'd').unwrap_or(false) {
+                if composed
+                    .chars()
+                    .last()
+                    .map(|ch| ch.to_lowercase().next().unwrap_or(ch) == 'd')
+                    .unwrap_or(false)
+                {
                     // Check it's actually a 'd' not 'đ'
                     let last = composed.chars().last().unwrap();
                     if last == 'd' || last == 'D' {
-                        return Some(MarkAction { base: 'd', target: 'đ' });
+                        return Some(MarkAction {
+                            base: 'd',
+                            target: 'đ',
+                        });
                     }
                 }
                 None
@@ -193,7 +243,8 @@ impl Engine for TelexEngine {
                 if mark.base == 'd' {
                     // dd -> đ: replace last 'd' with 'đ'
                     let composed = self.buffer.composed().to_string();
-                    let new_composed = replace_last_char(&composed, if c.is_uppercase() { 'Đ' } else { 'đ' });
+                    let new_composed =
+                        replace_last_char(&composed, if c.is_uppercase() { 'Đ' } else { 'đ' });
                     self.buffer.push(c, |_, _| new_composed);
                     return Action::Update;
                 }

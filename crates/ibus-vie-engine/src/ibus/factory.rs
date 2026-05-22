@@ -14,17 +14,12 @@ const FACTORY_PATH: &str = "/org/freedesktop/IBus/Factory";
 pub async fn register(connection: &Connection, config: Config) -> Result<(), EngineError> {
     let factory = EngineFactory::new(config);
 
-    connection
-        .object_server()
-        .at(FACTORY_PATH, factory)
-        .await?;
+    connection.object_server().at(FACTORY_PATH, factory).await?;
 
     info!("factory registered at {}", FACTORY_PATH);
 
     // Request the well-known bus name that IBus expects
-    connection
-        .request_name("org.freedesktop.IBus.Vie")
-        .await?;
+    connection.request_name("org.freedesktop.IBus.Vie").await?;
 
     info!("bus name org.freedesktop.IBus.Vie acquired");
     Ok(())

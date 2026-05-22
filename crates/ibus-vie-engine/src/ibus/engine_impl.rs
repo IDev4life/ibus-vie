@@ -1,4 +1,4 @@
-use ibus_vie_im::{Action, Engine, KeyEvent, TelexEngine, VniEngine, ViqrEngine};
+use ibus_vie_im::{Action, Engine, KeyEvent, TelexEngine, ViqrEngine, VniEngine};
 use tracing::{debug, info};
 
 /// IBus Engine interface implementation.

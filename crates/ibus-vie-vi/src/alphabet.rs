@@ -5,9 +5,7 @@ pub const VOWELS: &[char] = &['a', 'e', 'i', 'o', 'u', 'y'];
 pub const VOWELS_WITH_MARKS: &[char] = &['ă', 'â', 'ê', 'ô', 'ơ', 'ư'];
 
 /// All vowel characters (base + marked).
-pub const ALL_VOWELS: &[char] = &[
-    'a', 'ă', 'â', 'e', 'ê', 'i', 'o', 'ô', 'ơ', 'u', 'ư', 'y',
-];
+pub const ALL_VOWELS: &[char] = &['a', 'ă', 'â', 'e', 'ê', 'i', 'o', 'ô', 'ơ', 'u', 'ư', 'y'];
 
 /// Single-character consonants.
 pub const SINGLE_CONSONANTS: &[&str] = &[
@@ -20,9 +18,7 @@ pub const ONSET_CLUSTERS: &[&str] = &[
 ];
 
 /// Valid coda consonants (phụ âm cuối).
-pub const CODA_CONSONANTS: &[&str] = &[
-    "c", "ch", "m", "n", "ng", "nh", "p", "t",
-];
+pub const CODA_CONSONANTS: &[&str] = &["c", "ch", "m", "n", "ng", "nh", "p", "t"];
 
 /// Check if a character is a Vietnamese vowel (case-insensitive).
 pub fn is_vowel(c: char) -> bool {
@@ -33,7 +29,24 @@ pub fn is_vowel(c: char) -> bool {
 /// Check if a character is a consonant letter (case-insensitive).
 pub fn is_consonant(c: char) -> bool {
     let lower = c.to_lowercase().next().unwrap_or(c);
-    matches!(lower, 'b'..='d' | 'đ' | 'g' | 'h' | 'k' | 'l' | 'm' | 'n' | 'p' | 'q' | 'r' | 's' | 't' | 'v' | 'x')
+    matches!(
+        lower,
+        'b'..='d'
+            | 'đ'
+            | 'g'
+            | 'h'
+            | 'k'
+            | 'l'
+            | 'm'
+            | 'n'
+            | 'p'
+            | 'q'
+            | 'r'
+            | 's'
+            | 't'
+            | 'v'
+            | 'x'
+    )
 }
 
 #[cfg(test)]

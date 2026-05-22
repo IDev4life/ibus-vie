@@ -105,7 +105,10 @@ pub fn apply_tone(c: char, tone: Tone) -> char {
 pub fn place_tone(syllable: &str, tone: Tone) -> String {
     if tone == Tone::None {
         // Remove existing tones
-        return syllable.chars().map(|c| apply_tone(c, Tone::None)).collect();
+        return syllable
+            .chars()
+            .map(|c| apply_tone(c, Tone::None))
+            .collect();
     }
 
     let chars: Vec<char> = syllable.chars().collect();

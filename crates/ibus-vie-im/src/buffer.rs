@@ -110,7 +110,27 @@ pub fn apply_mark_to_composed(composed: &str, base: char, target: char) -> Strin
 
 /// Check if a character triggers a word boundary (commit point).
 pub fn is_commit_trigger(c: char) -> bool {
-    matches!(c, ' ' | '\n' | '\t' | ',' | '.' | ';' | ':' | '!' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '"' | '\'' | '/' | '\\')
+    matches!(
+        c,
+        ' ' | '\n'
+            | '\t'
+            | ','
+            | '.'
+            | ';'
+            | ':'
+            | '!'
+            | '?'
+            | '('
+            | ')'
+            | '['
+            | ']'
+            | '{'
+            | '}'
+            | '"'
+            | '\''
+            | '/'
+            | '\\'
+    )
 }
 
 #[cfg(test)]

@@ -7,7 +7,11 @@ use clap::Parser;
 use tracing::info;
 
 #[derive(Parser, Debug)]
-#[command(name = "ibus-vie-engine", version, about = "Vietnamese input method engine for IBus")]
+#[command(
+    name = "ibus-vie-engine",
+    version,
+    about = "Vietnamese input method engine for IBus"
+)]
 struct Cli {
     /// Run as IBus engine (called by ibus-daemon).
     #[arg(long)]
@@ -28,7 +32,10 @@ fn main() {
 
     log::init();
 
-    info!("ibus-vie-engine starting (version {})", env!("CARGO_PKG_VERSION"));
+    info!(
+        "ibus-vie-engine starting (version {})",
+        env!("CARGO_PKG_VERSION")
+    );
 
     let config = config::Config::load();
     info!(?config, "loaded configuration");
