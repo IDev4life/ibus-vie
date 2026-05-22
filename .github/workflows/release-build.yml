@@ -21,11 +21,11 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             deb_arch: amd64
-            artifact_arch: x86_64-linux
+            artifact_arch: amd64
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
             deb_arch: arm64
-            artifact_arch: aarch64-linux
+            artifact_arch: arm64
             cross: true
 
     steps:
