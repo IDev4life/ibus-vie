@@ -21,9 +21,11 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             deb_arch: amd64
+            artifact_arch: x86_64-linux
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
             deb_arch: arm64
+            artifact_arch: aarch64-linux
             cross: true
 
     steps:
@@ -52,7 +54,7 @@ jobs:
           TARGET_DIR=target/${{ matrix.target }}/release
           VERSION=${{ github.event.release.tag_name }}
           VERSION=${VERSION#v}
-          ARCHIVE=ibus-vie-${VERSION}-${{ matrix.target }}.tar.gz
+          ARCHIVE=ibus-vie-${VERSION}-${{ matrix.artifact_arch }}.tar.gz
           tar -czf "$ARCHIVE" \
             -C "$TARGET_DIR" \
             ibus-vie-engine \
