@@ -10,6 +10,10 @@
           {
             "type": "command",
             "command": "bash -c 'f=\"$CLAUDE_TOOL_INPUT_FILE_PATH\"; [[ \"$f\" == *.rs ]] && crate=$(basename $(dirname $(dirname \"$f\"))) && cargo clippy -p \"$crate\" 2>&1 | head -40 || true'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'f=\"$CLAUDE_TOOL_INPUT_FILE_PATH\"; [[ \"$f\" == *.rs ]] && ws=$(git -C \"$(dirname \"$f\")\" rev-parse --show-toplevel 2>/dev/null) && cargo fmt --manifest-path \"$ws/Cargo.toml\" 2>&1 || true'"
           }
         ]
       }
