@@ -6,7 +6,35 @@ Bộ gõ tiếng Việt cho Linux, thiết kế **Wayland-first**, tích hợp t
 
 ## Trạng thái dự án
 
-[Chưa xác minh] Đây là kho tài liệu đặc tả ở giai đoạn thiết kế. Chưa có bản cài đặt thực tế của `ibus-vie` nào được kiểm thử. Mọi mô tả hành vi trong tài liệu này là dự định thiết kế, không phải mô tả phần mềm đã chạy.
+**Giai đoạn: Phase 0 → Phase 1** — FSM cho cả 3 kiểu gõ (Telex, VNI, VIQR) đã hoạt động. IBus engine binary biên dịch được. CLI debug tool sẵn sàng. Chưa kiểm thử tích hợp thực tế với `ibus-daemon` trên desktop.
+
+---
+
+## Thử nhanh
+
+```bash
+# Build
+cargo build --release
+
+# Debug FSM không cần IBus
+cargo run -p ibus-vie-cli -- --method telex --input "vieetj"
+# → việt
+
+cargo run -p ibus-vie-cli -- --method telex --input "tieengs"
+# → tiếng
+
+cargo run -p ibus-vie-cli -- --method vni --input "d9a6u"
+# → đâu
+
+cargo run -p ibus-vie-cli -- --method viqr --input "Vie^.t"
+# → Việt
+
+# Chạy test
+cargo test --workspace
+
+# Lint
+cargo clippy --all-targets --all-features -- -D warnings
+```
 
 ---
 
@@ -17,23 +45,39 @@ Trên Linux Wayland, các bộ gõ tiếng Việt phổ biến hiện nay (ibus-
 - Phải cài thêm framework (fcitx5) hoặc cài thêm package ngoài kho chính.
 - Phải đặt biến môi trường `GTK_IM_MODULE`, `QT_IM_MODULE`, `XMODIFIERS` — vốn là khái niệm thừa hưởng từ thời X11.
 - Phải tự khởi động daemon, tự thêm vào autostart.
-- [Chưa xác minh] Một số ứng dụng GTK4/Qt6 chạy Wayland thuần có thể ứng xử khác nhau giữa các framework.
 
-[Suy luận] Với người dùng cuối, trải nghiệm lý tưởng là: cài một package → mở Settings → thêm input source → gõ được ngay. Trên GNOME Wayland, đây chính là vòng đời mà các IBus engine đã đăng ký đi qua một cách tự nhiên.
+Với người dùng cuối, trải nghiệm lý tưởng là: cài một package → mở Settings → thêm input source → gõ được ngay. Trên GNOME Wayland, đây chính là vòng đời mà các IBus engine đã đăng ký đi qua một cách tự nhiên.
+
+---
+
+## Kiến trúc
+
+```
+ibus-vie-cli  ──►  ibus-vie-im  ──►  ibus-vie-vi
+ibus-vie-engine ──►  ibus-vie-im
+                 ──►  zbus, tokio, tracing, ...
+```
+
+| Crate             | Loại | Mục đích                                                       |
+| ----------------- | ---- | -------------------------------------------------------------- |
+| `ibus-vie-vi`     | lib  | Dữ liệu + luật âm tiết tiếng Việt. Const tables, đặt dấu thanh |
+| `ibus-vie-im`     | lib  | FSM Telex/VNI/VIQR thuần. Không I/O. Không IBus                |
+| `ibus-vie-engine` | bin  | Binary chạy bởi `ibus-daemon`. Tất cả DBus/IBus glue ở đây     |
+| `ibus-vie-cli`    | bin  | Tool dev. Gõ vào terminal → in ra kết quả. Không cần IBus chạy |
+
+**Quy tắc vàng:** logic gõ (`ibus-vie-im`, `ibus-vie-vi`) không được biết IBus tồn tại.
 
 ---
 
 ## Hướng tiếp cận kỹ thuật
 
-[Suy luận] `ibus-vie` được thiết kế như một **IBus engine** viết bằng **Rust** vì các lý do sau:
+`ibus-vie` được thiết kế như một **IBus engine** viết bằng **Rust**:
 
-1. GNOME Settings → Keyboard → Input Sources liệt kê các IBus engine đã đăng ký mà không cần thêm bước cấu hình. Khi file mô tả engine (XML) được đặt đúng chỗ trong `/usr/share/ibus/component/`, engine xuất hiện trong danh sách.
-2. IBus đã được tích hợp sẵn với Mutter (compositor GNOME) qua giao thức `input-method` của Wayland — không cần người dùng tự cấu hình lớp IM.
-3. Không cần daemon thứ hai song song với `ibus-daemon` đã có sẵn của GNOME.
+1. GNOME Settings → Keyboard → Input Sources liệt kê các IBus engine đã đăng ký mà không cần thêm bước cấu hình.
+2. IBus đã được tích hợp sẵn với Mutter (compositor GNOME) qua giao thức `input-method` của Wayland.
+3. Không cần daemon thứ hai song song với `ibus-daemon` đã có sẵn.
 
-[Chưa xác minh] KDE Plasma 6 Wayland cũng tích hợp với IBus, nhưng các chi tiết tích hợp (ví dụ độ ổn định của text-input-v3) cần được kiểm chứng trên từng phiên bản cụ thể trước khi cam kết.
-
-[Suy đoán] Cách tiếp cận này _có thể_ mang lại trải nghiệm đơn giản hơn cho người dùng GNOME so với cài fcitx5 trên môi trường vốn dùng IBus mặc định. Đây là giả thuyết thiết kế, chưa có dữ liệu so sánh.
+Giao tiếp với `ibus-daemon` qua DBus bằng crate `zbus` (Rust thuần) — không cần `libibus` C bindings.
 
 ---
 
@@ -54,4 +98,4 @@ Trên Linux Wayland, các bộ gõ tiếng Việt phổ biến hiện nay (ibus-
 
 ## License
 
-[Chưa xác minh] Chưa chọn license. Đề xuất GPL-3.0 hoặc MIT — quyết định khi tạo repo thực sự.
+GPL-3.0-or-later
