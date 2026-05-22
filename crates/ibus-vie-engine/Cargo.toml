@@ -11,6 +11,18 @@ description = "IBus engine binary for Vietnamese input (ibus-vie)"
 name = "ibus-vie-engine"
 path = "src/main.rs"
 
+[package.metadata.deb]
+name = "ibus-vie"
+maintainer = "IDev4life"
+depends = "ibus"
+section = "utils"
+priority = "optional"
+assets = [
+  ["target/release/ibus-vie-engine", "usr/libexec/ibus-engine-vie", "755"],
+  ["target/release/ibus-vie-cli",    "usr/bin/ibus-vie-cli",         "755"],
+  ["data/vie.xml",                   "usr/share/ibus/component/vie.xml", "644"],
+]
+
 [dependencies]
 ibus-vie-im = { path = "../ibus-vie-im" }
 zbus.workspace = true

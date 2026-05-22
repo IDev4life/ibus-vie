@@ -20,8 +20,10 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
+            deb_arch: amd64
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
+            deb_arch: arm64
             cross: true
 
     steps:
@@ -45,7 +47,7 @@ jobs:
       - name: Build
         run: cargo build --release --workspace --target ${{ matrix.target }}
 
-      - name: Package
+      - name: Package tar.gz
         run: |
           TARGET_DIR=target/${{ matrix.target }}/release
           ARCHIVE=ibus-vie-${{ github.event.release.tag_name }}-${{ matrix.target }}.tar.gz
@@ -55,12 +57,20 @@ jobs:
             ibus-vie-cli
           echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
 
+      - name: Package deb
+        run: |
+          cargo install cargo-deb
+          sed 's|@LIBEXEC@|/usr/libexec|g' data/vie.xml.in > data/vie.xml
+          cargo deb -p ibus-vie-engine --no-build --target ${{ matrix.target }}
+          DEB=$(ls target/${{ matrix.target }}/debian/ibus-vie_*.deb)
+          echo "DEB=$DEB" >> $GITHUB_ENV
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
-            "${{ env.ARCHIVE }}" --clobber
+            "${{ env.ARCHIVE }}" "${{ env.DEB }}" --clobber
 
   checksums:
     name: Generate checksums
@@ -74,12 +84,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download "${{ github.event.release.tag_name }}" \
-            --pattern "*.tar.gz" --dir artifacts/
+            --pattern "*.tar.gz" --pattern "*.deb" --dir artifacts/
 
       - name: Generate SHA256SUMS
         run: |
           cd artifacts
-          sha256sum *.tar.gz > SHA256SUMS.txt
+          sha256sum *.tar.gz *.deb > SHA256SUMS.txt
 
       - name: Upload checksums
         env:
