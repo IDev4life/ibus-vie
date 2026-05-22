@@ -2,7 +2,7 @@
 <component>
   <name>org.freedesktop.IBus.Vie</name>
   <description>Vietnamese input method (ibus-vie)</description>
-  <exec>@LIBEXEC@/ibus-engine-vie --ibus</exec>
+  <exec>@LIBEXEC@/ibus-vie-engine --ibus</exec>
   <version>0.1.0</version>
   <author>dev1sme</author>
   <license>GPL-3.0-or-later</license>
@@ -31,17 +31,6 @@
       <description>Vietnamese VNI input via ibus-vie</description>
       <symbol>VI</symbol>
       <rank>49</rank>
-    </engine>
-    <engine>
-      <name>vie-viqr</name>
-      <language>vi</language>
-      <license>GPL-3.0-or-later</license>
-      <author>dev1sme</author>
-      <layout>us</layout>
-      <longname>Vietnamese (ibus-vie — VIQR)</longname>
-      <description>Vietnamese VIQR input via ibus-vie</description>
-      <symbol>VI</symbol>
-      <rank>48</rank>
     </engine>
   </engines>
 </component>

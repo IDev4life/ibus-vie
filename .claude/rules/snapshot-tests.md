@@ -1,6 +1,6 @@
 ---
 description: Snapshot test format and conventions
-globs: tests/snapshot/**/*.txt
+globs: tests/snapshot/**/*.txt, crates/ibus-vie-im/tests/**/*.rs
 ---
 
 # Snapshot Test Format
@@ -21,12 +21,27 @@ Rules:
 - Expected output is the final composed Vietnamese string
 - Each line tests a single word/syllable (no spaces in input unless testing word boundaries)
 
-## Current test setup
+## Test structure
 
-Tests live as inline unit tests in each engine file (`telex.rs`, `vni.rs`, `viqr.rs`) using `engine.feed_str(input)`. The snapshot `.txt` files document expected behavior and serve as the source-of-truth reference.
+Tests are **integration tests** in `crates/ibus-vie-im/tests/`:
 
-When adding new cases:
+- `snapshot.rs` — reads `tests/snapshot/*.txt` and runs each line through the engine
+- `telex.rs` — Telex-specific named tests
+- `vni.rs` — VNI-specific named tests
+
+Source files (`telex.rs`, `vni.rs`) contain NO inline `#[cfg(test)]` modules — all tests live in the integration test directory.
+
+## When adding new cases
 
 1. Add a line to the corresponding `tests/snapshot/<method>.txt`
-2. Add a matching `#[test]` in the engine's `mod tests` block
+2. Optionally add a named `#[test]` in `crates/ibus-vie-im/tests/<method>.rs` for complex scenarios
 3. Run `cargo test --workspace` to verify
+
+## Running specific tests
+
+```bash
+cargo test -p ibus-vie-im --test snapshot   # snapshot .txt runner only
+cargo test -p ibus-vie-im --test telex      # telex named tests only
+cargo test -p ibus-vie-im --test vni        # vni named tests only
+cargo test -p ibus-vie-im                   # all ibus-vie-im tests
+```

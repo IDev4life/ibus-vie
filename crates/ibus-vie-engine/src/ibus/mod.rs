@@ -1,6 +1,8 @@
 pub mod connection;
 pub mod engine_impl;
 pub mod factory;
+pub mod ibus_text;
+pub mod signals;
 
 use crate::config::Config;
 use crate::error::EngineError;

@@ -1,5 +1,5 @@
-use crate::action::{Action, KeyEvent};
-use crate::buffer::{apply_mark_to_composed, apply_tone_to_composed, is_commit_trigger, Buffer};
+use crate::action::Action;
+use crate::buffer::{apply_mark_to_composed, apply_tone_to_composed, Buffer};
 use crate::engine::Engine;
 use ibus_vie_vi::alphabet::is_vowel;
 use ibus_vie_vi::tone::Tone;
@@ -104,45 +104,16 @@ impl Default for VniEngine {
 }
 
 impl Engine for VniEngine {
-    fn key(&mut self, ev: KeyEvent) -> Action {
-        if ev.backspace {
-            if self.buffer.is_empty() {
-                return Action::PassThrough;
-            }
-            let raw: Vec<char> = self.buffer.raw().to_vec();
-            self.buffer.clear();
-            if raw.len() <= 1 {
-                return Action::Update;
-            }
-            for &c in &raw[..raw.len() - 1] {
-                let _ = self.key(KeyEvent::from_char(c));
-            }
-            return Action::Update;
-        }
+    fn buffer(&self) -> &Buffer {
+        &self.buffer
+    }
 
-        if ev.escape {
-            if self.buffer.is_empty() {
-                return Action::PassThrough;
-            }
-            self.buffer.clear();
-            return Action::Update;
-        }
+    fn buffer_mut(&mut self) -> &mut Buffer {
+        &mut self.buffer
+    }
 
-        let c = match ev.char {
-            Some(c) => c,
-            None => return Action::PassThrough,
-        };
-
-        if is_commit_trigger(c) {
-            if self.buffer.is_empty() {
-                return Action::PassThrough;
-            }
-            let mut committed = self.buffer.take();
-            committed.push(c);
-            return Action::Commit(committed);
-        }
-
-        // Check for VNI digit keys when buffer has content
+    fn process_char(&mut self, c: char) -> Option<Action> {
+        // VNI uses digit keys for marks and tones
         if c.is_ascii_digit() && !self.buffer.is_empty() {
             // Check mark keys first (6, 7, 8, 9)
             if let Some((base, target)) = Self::mark_key(c, self.buffer.composed()) {
@@ -159,12 +130,12 @@ impl Engine for VniEngine {
                     }
                     let new_composed: String = chars.into_iter().collect();
                     self.buffer.push(c, |_, _| new_composed);
-                    return Action::Update;
+                    return Some(Action::Update);
                 }
                 let composed = self.buffer.composed().to_string();
                 let new_composed = apply_mark_to_composed(&composed, base, target);
                 self.buffer.push(c, |_, _| new_composed);
-                return Action::Update;
+                return Some(Action::Update);
             }
 
             // Check tone keys (1-5, 0) when there are vowels
@@ -173,93 +144,14 @@ impl Engine for VniEngine {
                     let composed = self.buffer.composed().to_string();
                     let new_composed = apply_tone_to_composed(&composed, tone);
                     self.buffer.push(c, |_, _| new_composed);
-                    return Action::Update;
+                    return Some(Action::Update);
                 }
             }
 
-            // Digit not consumed: commit buffer + digit
-            if self.buffer.is_empty() {
-                return Action::PassThrough;
-            }
-            let mut committed = self.buffer.take();
-            committed.push(c);
-            return Action::Commit(committed);
+            // Digit not consumed — let default handling commit or pass through
+            return None;
         }
 
-        if !c.is_alphabetic() {
-            if self.buffer.is_empty() {
-                return Action::PassThrough;
-            }
-            let mut committed = self.buffer.take();
-            committed.push(c);
-            return Action::Commit(committed);
-        }
-
-        // Regular character
-        self.buffer.push(c, |s, ch| format!("{}{}", s, ch));
-        Action::Update
-    }
-
-    fn reset(&mut self) {
-        self.buffer.clear();
-    }
-
-    fn preedit(&self) -> &str {
-        self.buffer.composed()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn feed(input: &str) -> String {
-        let mut engine = VniEngine::new();
-        engine.feed_str(input)
-    }
-
-    #[test]
-    fn test_basic() {
-        assert_eq!(feed("a"), "a");
-        assert_eq!(feed("ba"), "ba");
-    }
-
-    #[test]
-    fn test_tone() {
-        assert_eq!(feed("a1"), "á");
-        assert_eq!(feed("a2"), "à");
-    }
-
-    #[test]
-    fn test_circumflex() {
-        assert_eq!(feed("a6"), "â");
-        assert_eq!(feed("e6"), "ê");
-    }
-
-    #[test]
-    fn test_horn() {
-        assert_eq!(feed("o7"), "ơ");
-        assert_eq!(feed("u7"), "ư");
-    }
-
-    #[test]
-    fn test_breve() {
-        assert_eq!(feed("a8"), "ă");
-    }
-
-    #[test]
-    fn test_d_stroke() {
-        assert_eq!(feed("d9"), "đ");
-    }
-
-    #[test]
-    fn test_viet() {
-        // vie6t5 -> việt
-        assert_eq!(feed("vie6t5"), "việt");
-    }
-
-    #[test]
-    fn test_dau() {
-        assert_eq!(feed("d9a6u"), "đâu");
+        None
     }
 }

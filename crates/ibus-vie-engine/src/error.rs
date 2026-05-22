@@ -8,6 +8,9 @@ pub enum EngineError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
+    #[error("Connection error: {0}")]
+    Connection(String),
+
     #[error("Configuration error: {0}")]
     #[allow(dead_code)]
     Config(String),

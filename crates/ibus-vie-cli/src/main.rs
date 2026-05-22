@@ -1,13 +1,13 @@
 #![forbid(unsafe_code)]
 
 use clap::Parser;
-use ibus_vie_im::{Engine, TelexEngine, ViqrEngine, VniEngine};
+use ibus_vie_im::{Engine, TelexEngine, VniEngine};
 use std::io::{self, BufRead, Write};
 
 #[derive(Parser, Debug)]
 #[command(name = "ibus-vie-cli", version, about = "Debug tool for ibus-vie FSM")]
 struct Cli {
-    /// Input method: telex, vni, or viqr.
+    /// Input method: telex or vni.
     #[arg(long, default_value = "telex")]
     method: String,
 
@@ -23,7 +23,6 @@ struct Cli {
 fn create_engine(method: &str) -> Box<dyn Engine> {
     match method {
         "vni" => Box::new(VniEngine::new()),
-        "viqr" => Box::new(ViqrEngine::new()),
         _ => Box::new(TelexEngine::new()),
     }
 }

@@ -57,7 +57,6 @@ impl EngineFactory {
 
         let method = match engine_name {
             "vie-vni" => "vni",
-            "vie-viqr" => "viqr",
             _ => "telex", // Default to telex (also handles "vie-telex")
         };
 
