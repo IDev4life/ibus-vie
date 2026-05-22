@@ -17,24 +17,23 @@ Tài liệu này mô tả cách `ibus-vie` được tổ chức bên trong. Cầ
 │  Compositor: Mutter (GNOME) hoặc KWin (KDE)                 │
 └─────────────────────────────────────────────────────────────┘
                           ▲
-                          │  zwp_input_method_v2 hoặc tương đương
+                          │  IBus integration (Mutter tích hợp sẵn)
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  ibus-daemon (đã có sẵn trong GNOME, hoặc cài thêm trên KDE)│
 └─────────────────────────────────────────────────────────────┘
                           ▲
-                          │  IBus IPC (DBus)
+                          │  IBus IPC (DBus session bus)
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  ibus-vie engine  ←  ĐÂY LÀ PHẦN REPO NÀY VIẾT                │
+│  ibus-vie engine                                             │
 │  ┌───────────────┐  ┌──────────────┐  ┌─────────────────┐   │
 │  │ IBus Engine   │  │ Input Method │  │ Vietnamese      │   │
-│  │ glue (DBus)   │──│ FSM          │──│ syllable rules  │   │
+│  │ glue (zbus)   │──│ FSM          │──│ syllable rules  │   │
 │  └───────────────┘  └──────────────┘  └─────────────────┘   │
+│  ibus-vie-engine      ibus-vie-im        ibus-vie-vi         │
 └─────────────────────────────────────────────────────────────┘
 ```
-
-[Chưa xác minh] Sơ đồ trên là cách hiểu chuẩn về stack input method trên Wayland qua IBus. Một số chi tiết (ví dụ phiên bản giao thức Wayland chính xác mà Mutter dùng để nói chuyện với IBus) cần được tra cứu lại trước khi viết code.
 
 ---
 
@@ -63,112 +62,122 @@ Có hai con đường khả dĩ:
 
 ### 3.1. Component descriptor (XML)
 
-File: `vie.xml`, cài tại `/usr/share/ibus/component/vie.xml`.
-
-[Suy luận] Nội dung kỳ vọng (chính xác cú pháp cần đối chiếu IBus docs khi cài thật):
+File template: `data/vie.xml.in`, cài tại `/usr/share/ibus/component/vie.xml`.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <component>
   <name>org.freedesktop.IBus.Vie</name>
   <description>Vietnamese input method (ibus-vie)</description>
-  <exec>/usr/libexec/ibus-engine-vie --ibus</exec>
+  <exec>@LIBEXEC@/ibus-engine-vie --ibus</exec>
   <version>0.1.0</version>
-  <author>...</author>
-  <license>...</license>
-  <homepage>...</homepage>
+  <author>dev1sme</author>
+  <license>GPL-3.0-or-later</license>
+  <homepage>https://github.com/IDev4life/ibus-vie</homepage>
   <textdomain>ibus-vie</textdomain>
 
   <engines>
     <engine>
       <name>vie-telex</name>
       <language>vi</language>
-      <license>...</license>
-      <author>...</author>
+      <license>GPL-3.0-or-later</license>
+      <author>dev1sme</author>
       <layout>us</layout>
       <longname>Vietnamese (ibus-vie — Telex)</longname>
-      <description>Vietnamese Telex via ibus-vie</description>
+      <description>Vietnamese Telex input via ibus-vie</description>
       <symbol>VI</symbol>
+      <rank>50</rank>
     </engine>
     <engine>
       <name>vie-vni</name>
       <language>vi</language>
+      <license>GPL-3.0-or-later</license>
+      <author>dev1sme</author>
       <layout>us</layout>
       <longname>Vietnamese (ibus-vie — VNI)</longname>
+      <description>Vietnamese VNI input via ibus-vie</description>
       <symbol>VI</symbol>
+      <rank>49</rank>
     </engine>
     <engine>
       <name>vie-viqr</name>
       <language>vi</language>
+      <license>GPL-3.0-or-later</license>
+      <author>dev1sme</author>
       <layout>us</layout>
       <longname>Vietnamese (ibus-vie — VIQR)</longname>
+      <description>Vietnamese VIQR input via ibus-vie</description>
       <symbol>VI</symbol>
+      <rank>48</rank>
     </engine>
   </engines>
 </component>
 ```
 
-[Chưa xác minh] Cú pháp XML cụ thể của IBus có thể có thêm/bớt trường so với ví dụ trên. Phải đối chiếu với tài liệu IBus tại thời điểm implement.
+`@LIBEXEC@` được thay thế bởi Makefile tại thời điểm install (mặc định `/usr/libexec`).
 
 ### 3.2. Engine executable
 
-Binary chạy khi IBus kích hoạt engine. Các quyết định:
+Binary chạy khi IBus kích hoạt engine:
 
-- **Ngôn ngữ:** **Rust** (edition 2021). Không phụ thuộc runtime ngoài (`glibc` là đủ), binary nhỏ, hiệu năng tốt, an toàn bộ nhớ — phù hợp với một process long-running do `ibus-daemon` spawn/kill.
+- **Ngôn ngữ:** **Rust** (edition 2021, MSRV 1.95). Không phụ thuộc runtime ngoài (`glibc` là đủ), binary nhỏ, hiệu năng tốt, an toàn bộ nhớ.
 - **Vị trí cài:** `/usr/libexec/ibus-engine-vie`.
 - **Vòng đời:** `ibus-daemon` tự spawn khi engine được activate, terminate khi không cần.
 
-[Suy luận] Rust được chọn thay vì Python (tránh phụ thuộc Python runtime + GI bindings cho mỗi user) và thay vì C (tránh nợ kỹ thuật về quản lý bộ nhớ). Đánh đổi: thời gian đến prototype đầu tiên dài hơn Python một chút, nhưng từ Phase 1 trở đi sẽ thuận hơn.
+**Giao tiếp với IBus:** Dùng crate `zbus` 5 (Rust thuần) để nói chuyện trực tiếp với `ibus-daemon` qua DBus session bus. Không cần `libibus` C library.
 
-**Giao tiếp với IBus:**
+Crate phụ thuộc chính:
 
-[Chưa xác minh] Phương án ưu tiên: dùng crate `zbus` (Rust thuần) để nói chuyện trực tiếp với `ibus-daemon` qua DBus. IBus expose interface qua DBus, nên về lý thuyết không cần libibus C library. Phương án dự phòng nếu `zbus` thiếu API: dùng `gtk-rs` + binding FFI vào libibus.
-
-Crate phụ thuộc chính (dự kiến):
-
-| Crate                            | Vai trò                                           |
-| -------------------------------- | ------------------------------------------------- |
-| `zbus`                           | DBus client async, Rust thuần                     |
-| `tokio`                          | Async runtime (single-thread flavor)              |
-| `tracing` + `tracing-subscriber` | Structured logging cho debug                      |
-| `serde` + `toml`                 | Đọc file config user                              |
-| `clap`                           | CLI parsing (cho `--ibus` flag và `ibus-vie-cli`) |
-| `insta`                          | Snapshot testing                                  |
-| `criterion` (dev)                | Benchmark FSM                                     |
+| Crate                            | Version | Vai trò                                           |
+| -------------------------------- | ------- | ------------------------------------------------- |
+| `zbus`                           | 5       | DBus client async, Rust thuần                     |
+| `tokio`                          | 1       | Async runtime (current_thread flavor)             |
+| `tracing` + `tracing-subscriber` | 0.1/0.3 | Structured logging cho debug                      |
+| `serde` + `toml`                 | 1/1.1   | Đọc file config user                              |
+| `clap`                           | 4       | CLI parsing (cho `--ibus` flag và `ibus-vie-cli`) |
+| `thiserror`                      | 2       | Error types                                       |
+| `insta`                          | 1       | Snapshot testing (dev-dependency)                 |
 
 Chi tiết phân bổ source xem **`SOURCE_LAYOUT.md`**.
 
 ### 3.3. Input Method FSM (Finite State Machine)
 
-Phần xử lý phím nhấn → preedit → commit. Tách thành module thuần (không phụ thuộc IBus) để dễ test.
+Phần xử lý phím nhấn → preedit → commit. Tách thành crate `ibus-vie-im` thuần (không phụ thuộc IBus) để test offline.
 
 Chi tiết quy tắc xem `INPUT_METHODS.md`.
 
-**API nội bộ đề xuất:**
+**API thực tế:**
 
-```
-struct Engine {
-    fn key_press(key: Key) -> Action
+```rust
+pub trait Engine {
+    fn key(&mut self, ev: KeyEvent) -> Action;
+    fn reset(&mut self);
+    fn preedit(&self) -> &str;
+    fn feed_str(&mut self, input: &str) -> String; // convenience cho test
 }
 
-enum Action {
-    UpdatePreedit(String),
+pub enum Action {
+    Update,
     Commit(String),
     PassThrough,
 }
+
+pub struct KeyEvent {
+    pub char: Option<char>,
+    pub backspace: bool,
+    pub escape: bool,
+}
 ```
 
-[Suy luận] Tách FSM ra khỏi IBus glue cho phép viết unit test mà không cần chạy ibus-daemon — quan trọng cho chất lượng.
+Tách FSM ra khỏi IBus glue cho phép viết unit test mà không cần chạy `ibus-daemon`.
 
 ### 3.4. Vietnamese syllable rules
 
-Bảng dữ liệu tĩnh mô tả:
+Crate `ibus-vie-vi` — bảng dữ liệu tĩnh:
 
-- Tập nguyên âm hợp lệ tiếng Việt
-- Vị trí đặt dấu thanh (theo quy tắc chính tả)
-- Phụ âm đầu / phụ âm cuối hợp lệ
-
-[Chưa xác minh] Có nhiều quy ước về vị trí đặt dấu ("kiểu cũ" vs "kiểu mới" — ví dụ "hoà" vs "hòa"). Cần quyết định mặc định và cho phép cấu hình.
+- Tập nguyên âm / phụ âm hợp lệ tiếng Việt (`alphabet.rs`)
+- Cấu trúc âm tiết (`syllable.rs`)
+- Vị trí đặt dấu thanh (`tone.rs`) — mặc định kiểu mới ("hòa"), có config để đổi sang kiểu cũ ("hoà")
 
 ---
 
@@ -177,16 +186,20 @@ Bảng dữ liệu tĩnh mô tả:
 ```
 ibus-vie/
 ├── Cargo.toml                # workspace root
+├── rust-toolchain.toml       # pin stable toolchain
+├── Makefile                  # Wrapper tiện ích quanh cargo
 ├── crates/
+│   ├── ibus-vie-vi/            # Quy tắc âm tiết tiếng Việt (leaf, no deps)
 │   ├── ibus-vie-im/            # FSM thuần — KHÔNG depend IBus
-│   ├── ibus-vie-vi/            # Quy tắc âm tiết tiếng Việt
 │   ├── ibus-vie-engine/        # IBus binary (giao tiếp DBus)
 │   └── ibus-vie-cli/           # Tool debug FSM ở terminal
-├── data/                     # vie.xml.in, icons
+├── data/
+│   └── vie.xml.in            # IBus component descriptor (template)
 ├── tests/snapshot/           # Test case dạng text, dễ contribute
-├── packaging/                # debian/, rpm/, arch/
-├── docs/
-└── Makefile                  # Wrapper tiện ích quanh cargo
+│   ├── telex.txt
+│   ├── vni.txt
+│   └── viqr.txt
+└── docs/
 ```
 
 **Chi tiết đầy đủ về layout, ranh giới module, dependency graph, cách debug → xem `SOURCE_LAYOUT.md`.**
@@ -195,17 +208,17 @@ ibus-vie/
 
 ## 5. Cách `ibus-vie` đến được Settings
 
-[Suy luận] Quy trình mà repo này dựa vào:
+Quy trình:
 
 1. Cài package → file `vie.xml` được đặt tại `/usr/share/ibus/component/`.
-2. Trigger IBus đọc lại component (qua `ibus write-cache --system` hoặc reload).
+2. Chạy `ibus write-cache --system` (hoặc `ibus restart`) để IBus đọc lại danh sách component.
 3. GNOME Settings (gnome-control-center) liệt kê các engine từ component này.
 4. Người dùng bấm Add → entry "Vietnamese (ibus-vie — Telex)" xuất hiện.
 5. Khi người dùng chọn input source này, IBus gọi `exec` trong XML → engine binary chạy.
-6. Engine binary đăng ký với `ibus-daemon` qua DBus.
-7. Mutter routes phím nhấn của ứng dụng đang focus về engine qua giao thức Wayland input-method → IBus → engine.
+6. Engine binary đăng ký với `ibus-daemon` qua DBus session bus (sử dụng `zbus`).
+7. Mutter routes phím nhấn của ứng dụng đang focus về engine qua IBus.
 
-[Chưa xác minh] Một số bước (ví dụ có cần `ibus write-cache` hay GNOME tự phát hiện) phụ thuộc phiên bản IBus và GNOME. Cần kiểm chứng khi đóng gói.
+Cho dev: `make install-user` cài vào `~/.local/share/ibus/component/` để test không cần root.
 
 ---
 

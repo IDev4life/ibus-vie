@@ -29,20 +29,26 @@ cargo build --release          # build tất cả
 cargo test --workspace         # chạy tất cả test
 cargo fmt --all                # format
 cargo clippy --all-targets --all-features -- -D warnings  # lint
-make check                     # fmt + lint + test
+make check                     # fmt + lint + test (shortcut)
 
 # Debug FSM nhanh (không cần IBus)
 cargo run -p ibus-vie-cli -- --method telex --input "vieetj"
+
+# Interactive mode — gõ trực tiếp, Ctrl+D thoát
+cargo run -p ibus-vie-cli -- --method telex
+
+# Trace FSM steps
+cargo run -p ibus-vie-cli -- --method telex --trace --input "vieetj"
 ```
 
 ---
 
 ## Code style
 
-Ngôn ngữ: **Rust** (edition 2021).
+Ngôn ngữ: **Rust** (edition 2021, MSRV 1.95).
 
 - Format: `cargo fmt --all` — phải pass trước khi mở PR.
-- Lint: `cargo clippy --all-targets --all-features -- -D warnings` — không cho phép warning.
+- Lint: `cargo clippy --all-targets --all-features -- -D warnings` — zero warning policy.
 - Test: `cargo test --workspace` phải pass.
 
 Đặt tên:
@@ -66,6 +72,8 @@ tieengs	tiếng
 ```
 
 Format: `chuỗi_phím<TAB>kết_quả_mong_đợi`. Mỗi dòng một test case. Dòng bắt đầu bằng `#` là comment.
+
+Sau khi thêm, chạy `cargo test --workspace` để verify.
 
 ---
 

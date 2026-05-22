@@ -1,53 +1,51 @@
 # INSTALL — Hướng dẫn build và cài đặt
 
-[Chưa xác minh] Tài liệu này mô tả **quy trình dự định**. Repo hiện chưa có code, nên các lệnh dưới đây là khung sườn — sẽ được hoàn thiện khi prototype đầu tiên chạy.
-
 ---
 
 ## 1. Yêu cầu hệ thống
 
-### Bắt buộc
-- Linux với kernel hỗ trợ Wayland (≥ 5.x trên thực tế).
+### Runtime
+
+- Linux (Wayland hoặc X11).
 - IBus đã cài và chạy.
   - GNOME: mặc định có sẵn.
   - KDE: thường phải cài thêm `ibus`.
-- Compositor: Mutter (GNOME) hoặc KWin (KDE Plasma).
 
 ### Build dependencies
 
 ibus-vie được viết bằng **Rust**. Cần:
 
-- `rustc` + `cargo` (≥ 1.75, edition 2021).
-- `make` (để chạy các target tiện ích `make install`, `make uninstall`).
-- `pkg-config`.
+- `rustc` + `cargo` (≥ 1.95, edition 2021). Khuyên dùng [rustup](https://rustup.rs/) nếu distro có Rust cũ.
+- `make`.
 
-[Chưa xác minh] ibus-vie giao tiếp với `ibus-daemon` qua DBus bằng crate `zbus` (Rust thuần) — nên **không** cần `ibus` development headers / C bindings. Quyết định này được mô tả trong `ARCHITECTURE.md` §3.2 và `SOURCE_LAYOUT.md`. Phương án dùng FFI vào libibus chỉ là phương án dự phòng nếu DBus thuần thiếu API.
+Không cần `pkg-config` hay `ibus` development headers — `ibus-vie` giao tiếp qua DBus bằng crate `zbus` (Rust thuần).
 
 ### Tên package theo distro
 
-| Distro | Lệnh cài deps |
-|--------|---------------|
-| Ubuntu/Debian | `sudo apt install rustc cargo make pkg-config` |
-| Fedora | `sudo dnf install rust cargo make pkgconf-pkg-config` |
-| Arch | `sudo pacman -S rust make pkgconf` |
+| Distro        | Lệnh cài deps                       |
+| ------------- | ----------------------------------- |
+| Ubuntu/Debian | `sudo apt install rustc cargo make` |
+| Fedora        | `sudo dnf install rust cargo make`  |
+| Arch          | `sudo pacman -S rust make`          |
 
-[Chưa xác minh] Phiên bản `rustc` trong kho APT của Ubuntu LTS có thể cũ — nếu vậy dùng `rustup` để cài toolchain mới hơn.
+Nếu phiên bản `rustc` trong kho APT/DNF cũ hơn 1.95, dùng `rustup` để cài toolchain mới.
 
 ---
 
 ## 2. Build từ source
 
 ```bash
-git clone https://github.com/<owner>/ibus-vie.git
+git clone https://github.com/IDev4life/ibus-vie.git
 cd ibus-vie
-cargo build --release            # build tất cả crates trong workspace
+cargo build --release
 # hoặc
-make build                       # wrapper gọi cargo
+make build
 ```
 
-Binary đầu ra: `target/release/ibus-vie-engine` và `target/release/ibus-vie-cli` (tool debug).
+Binary đầu ra:
 
-[Chưa xác minh] Đường dẫn target có thể đổi nếu cấu hình `[workspace]` chỉ định `target-dir` khác. Xem `SOURCE_LAYOUT.md`.
+- `target/release/ibus-vie-engine` — IBus engine binary
+- `target/release/ibus-vie-cli` — CLI debug tool
 
 ---
 
@@ -59,35 +57,35 @@ Binary đầu ra: `target/release/ibus-vie-engine` và `target/release/ibus-vie-
 sudo make install
 ```
 
-Lệnh này (dự kiến) sẽ:
+Lệnh này sẽ:
 
 1. Copy binary tới `/usr/libexec/ibus-engine-vie`.
-2. Copy `vie.xml` tới `/usr/share/ibus/component/`.
-3. Copy icon tới `/usr/share/ibus/icons/` *(nếu có)*.
+2. Copy CLI tới `/usr/bin/ibus-vie-cli`.
+3. Sinh `vie.xml` từ template `data/vie.xml.in` và đặt tại `/usr/share/ibus/component/`.
 4. Chạy `ibus write-cache --system` để IBus đọc lại danh sách component.
 
-[Chưa xác minh] Bước (4) có thể không cần thiết trên các bản IBus mới — sẽ kiểm chứng.
+### Cài cho user (không cần root — dùng để dev/test)
 
-### Cài cho user (không cần root)
+```bash
+make install-user
+```
 
-[Suy đoán] Có thể hỗ trợ cài vào `~/.local/share/ibus/component/` để dev test mà không cần sudo. Cần kiểm chứng IBus có đọc thư mục này không trong từng phiên bản.
+Sinh `vie.xml` trỏ thẳng tới binary trong `target/release/` và đặt tại `~/.local/share/ibus/component/`. Sau đó chạy `ibus restart`.
 
 ---
 
 ## 4. Kích hoạt sau khi cài
 
-### Bước 1. Restart IBus (chỉ lần đầu)
+### Bước 1. Restart IBus
 
 ```bash
 ibus restart
 ```
 
-[Chưa xác minh] GNOME đôi khi tự phát hiện engine mới mà không cần lệnh này.
-
 ### Bước 2. Mở Settings
 
 - **GNOME:** Settings → Keyboard → Input Sources
-- **KDE Plasma:** System Settings → Keyboard → Virtual Keyboard *(hoặc Input Method, phụ thuộc phiên bản)*
+- **KDE Plasma:** System Settings → Virtual Keyboard / Input Method
 
 ### Bước 3. Add input source
 
@@ -108,40 +106,71 @@ Mở GNOME Text Editor, gõ `xin chaof` → mong đợi: `xin chào`.
 
 ---
 
-## 5. Gỡ cài đặt
+## 5. Cấu hình
+
+File: `~/.config/ibus-vie/config.toml` (tạo nếu cần, không bắt buộc — defaults đủ dùng):
+
+```toml
+method = "telex"       # telex | vni | viqr
+tone_style = "new"     # new (hòa) | old (hoà)
+```
+
+---
+
+## 6. Gỡ cài đặt
 
 ```bash
 sudo make uninstall
+ibus restart
 ```
 
-Hoặc thủ công xoá các file đã cài ở mục 3, rồi `ibus restart`.
+---
+
+## 7. Đóng gói cho distro
+
+[Suy đoán] Kế hoạch:
+
+- Debian/Ubuntu package (`.deb`) — metadata đã sẵn trong `Cargo.toml` (`[package.metadata.deb]`)
+- RPM spec cho Fedora/openSUSE
+- PKGBUILD cho Arch Linux / AUR
 
 ---
 
-## 6. Đóng gói cho distro
+## 8. Troubleshooting
 
-[Suy đoán] Repo sẽ cung cấp:
+### "ibus-vie không hiện trong Settings"
 
-- `packaging/debian/` — Debian/Ubuntu package files (`debian/control`, `rules`, ...).
-- `packaging/rpm/ibus-vie.spec` — RPM spec cho Fedora/openSUSE.
-- `packaging/arch/PKGBUILD` — Arch Linux/Manjaro AUR.
+```bash
+ibus list-engine | grep vie    # kiểm tra engine có được IBus thấy
+ibus restart                   # restart daemon
+```
 
-Đây là kế hoạch, chưa có sẵn.
+Nếu vẫn không thấy, kiểm tra file XML:
 
----
-
-## 7. Troubleshooting *(dự kiến)*
-
-[Chưa xác minh] Các vấn đề dưới đây là dự đoán dựa trên kinh nghiệm chung với input method trên Linux. Cần kiểm chứng khi có bản chạy thực:
-
-### "Tôi đã cài, nhưng ibus-vie không hiện trong Settings"
-- Chạy `ibus list-engine` để kiểm tra engine có được IBus thấy không.
-- Restart `ibus-daemon`: `ibus restart`.
-- Log out / log in lại.
+- Hệ thống: `/usr/share/ibus/component/vie.xml`
+- User: `~/.local/share/ibus/component/vie.xml`
 
 ### "Engine hiện trong Settings nhưng gõ không ra tiếng Việt"
-- Kiểm tra binary `/usr/libexec/ibus-engine-vie` có chạy được không (`file`, `ldd`).
-- Xem log: `journalctl --user -f` khi đang gõ.
 
-### "Gõ được ở terminal nhưng không gõ được ở Firefox / Electron app"
-[Chưa xác minh] Electron và một số ứng dụng XWayland có thể không nhận input method đúng. Đây là vấn đề chung của Linux IM, không riêng ibus-vie.
+```bash
+# Kiểm tra binary chạy được
+/usr/libexec/ibus-engine-vie --version
+
+# Xem log
+RUST_LOG=ibus_vie=debug ibus restart
+journalctl --user -f | grep ibus-vie
+```
+
+### "Gõ được ở GTK app nhưng không ở Firefox / Electron"
+
+Một số ứng dụng XWayland có thể cần biến môi trường legacy. Đây là vấn đề chung của Linux IM stack, không riêng ibus-vie.
+
+### Debug FSM (không cần IBus)
+
+```bash
+cargo run -p ibus-vie-cli -- --method telex --input "vieetj"
+# → việt
+
+cargo run -p ibus-vie-cli -- --method telex --trace --input "vieetj"
+# → in từng bước FSM
+```

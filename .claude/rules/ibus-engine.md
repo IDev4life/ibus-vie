@@ -14,8 +14,9 @@ globs: crates/ibus-vie-engine/**/*.rs
 `engine_impl.rs` translates IBus keyval/state → `KeyEvent`:
 
 - Ignore key release events (bit 30 of state)
-- Ignore keys with Ctrl or Alt modifiers
-- Map `0xff08` → Backspace, `0xff1b` → Escape, `0xff0d` → Enter
+- Ignore keys with Ctrl or Alt modifiers (commits pending preedit, then passes through)
+- Map `0xff08` → Backspace, `0xff1b` → Escape
+- `0xff0d` (Enter) → commits pending preedit directly (no KeyEvent created)
 - Map `0x20..=0x7e` → printable ASCII char
 
 ## Engine lifecycle
@@ -25,4 +26,5 @@ globs: crates/ibus-vie-engine/**/*.rs
   - `"vie-telex"` → `TelexEngine`
   - `"vie-vni"` → `VniEngine`
   - `"vie-viqr"` → `ViqrEngine`
-- On `focus_out` or `disable`, commit any pending preedit and reset
+- On `focus_out`, commit any pending preedit and reset
+- On `disable`, reset without committing

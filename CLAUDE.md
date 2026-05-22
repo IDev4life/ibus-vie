@@ -25,6 +25,7 @@ make install-user              # installs to ~/.local, then: ibus restart
 # Debug FSM without IBus
 cargo run -p ibus-vie-cli -- --method telex
 cargo run -p ibus-vie-cli -- --method vni --input "vieetj"
+cargo run -p ibus-vie-cli -- --method telex --trace --input "vieetj"  # trace each FSM step
 ```
 
 ## Architecture
@@ -34,19 +35,34 @@ Four crates with strict dependency boundaries:
 ```
 ibus-vie-cli  ──►  ibus-vie-im  ──►  ibus-vie-vi
 ibus-vie-engine ──►  ibus-vie-im
-                 ──►  zbus, tokio, tracing, ...
+                 ──►  zbus, tokio, tracing, serde, toml
 ```
 
 **`ibus-vie-vi`** (leaf, no deps) — static data: Vietnamese alphabet, syllable structure, tone placement tables. No I/O.
 
 **`ibus-vie-im`** — pure FSM, no IBus, no I/O. Three engines (`TelexEngine`, `VniEngine`, `ViqrEngine`) all implement `trait Engine`:
+
 - `fn key(&mut self, ev: KeyEvent) -> Action` — core keystroke handler
+- `fn feed_str(&mut self, input: &str) -> String` — convenience for testing (feed full string, return committed + preedit)
 - Returns `Action::Update`, `Action::Commit(String)`, or `Action::PassThrough`
 - `Buffer` in `buffer.rs` holds raw keystrokes + composed Vietnamese; all engines share it
 
-**`ibus-vie-engine`** — the actual binary spawned by `ibus-daemon`. Implements `org.freedesktop.IBus.Engine` DBus interface via `zbus`. `engine_impl.rs` translates IBus keyval/state integers → `KeyEvent` → delegates to `dyn Engine`.
+**`ibus-vie-engine`** — the actual binary spawned by `ibus-daemon`. Implements `org.freedesktop.IBus.Engine` DBus interface via `zbus`. `engine_impl.rs` translates IBus keyval/state integers → `KeyEvent` → delegates to `dyn Engine`. Loads config from `~/.config/ibus-vie/config.toml`.
 
-**`ibus-vie-cli`** — dev/debug binary. Runs the FSM in a terminal without IBus. Use this for all FSM debugging; much faster than testing through the daemon.
+**`ibus-vie-cli`** — dev/debug binary. Two modes:
+
+- One-shot: `--input "vieetj"` → prints result and exits
+- Interactive: reads stdin line by line, prints composed output
+- `--trace` flag prints each FSM step
+
+## Configuration
+
+File: `~/.config/ibus-vie/config.toml` (optional, defaults apply if missing)
+
+```toml
+method = "telex"       # telex | vni | viqr
+tone_style = "new"     # new (hòa) | old (hoà)
+```
 
 ## Key design rule
 
@@ -60,7 +76,7 @@ ibus-vie-engine ──►  ibus-vie-im
 vieetj	việt
 ```
 
-The Rust test runner in `ibus-vie-im` reads these files and calls `engine.feed_str(input)` against each line.
+The Rust test runner in `ibus-vie-im` reads these files and calls `engine.feed_str(input)` against each line. Uses `insta` crate for snapshot assertion.
 
 ## Adding a new input method
 

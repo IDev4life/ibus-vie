@@ -6,7 +6,7 @@ Bộ gõ tiếng Việt cho Linux, thiết kế **Wayland-first**, tích hợp t
 
 ## Trạng thái dự án
 
-**Giai đoạn: Phase 0 → Phase 1** — FSM cho cả 3 kiểu gõ (Telex, VNI, VIQR) đã hoạt động. IBus engine binary biên dịch được. CLI debug tool sẵn sàng. Chưa kiểm thử tích hợp thực tế với `ibus-daemon` trên desktop.
+**Giai đoạn: Phase 1 — Core engine hoàn chỉnh.** FSM cho cả 3 kiểu gõ (Telex, VNI, VIQR) hoạt động đầy đủ. IBus engine binary biên dịch và chạy được qua DBus (`zbus`). CLI debug tool sẵn sàng. Configuration từ `~/.config/ibus-vie/config.toml`. Tiếp theo: kiểm thử tích hợp trên desktop thực tế và đóng gói.
 
 ---
 
@@ -29,6 +29,12 @@ cargo run -p ibus-vie-cli -- --method vni --input "d9a6u"
 cargo run -p ibus-vie-cli -- --method viqr --input "Vie^.t"
 # → Việt
 
+# Interactive mode — gõ trực tiếp, Ctrl+D thoát
+cargo run -p ibus-vie-cli -- --method telex
+
+# Trace mode — xem từng bước FSM
+cargo run -p ibus-vie-cli -- --method telex --trace --input "vieetj"
+
 # Chạy test
 cargo test --workspace
 
@@ -50,12 +56,23 @@ Với người dùng cuối, trải nghiệm lý tưởng là: cài một packag
 
 ---
 
+## Cấu hình
+
+File: `~/.config/ibus-vie/config.toml` (tạo nếu cần, không bắt buộc)
+
+```toml
+method = "telex"       # telex | vni | viqr
+tone_style = "new"     # new (hòa) | old (hoà)
+```
+
+---
+
 ## Kiến trúc
 
 ```
 ibus-vie-cli  ──►  ibus-vie-im  ──►  ibus-vie-vi
 ibus-vie-engine ──►  ibus-vie-im
-                 ──►  zbus, tokio, tracing, ...
+                 ──►  zbus, tokio, tracing, serde, toml
 ```
 
 | Crate             | Loại | Mục đích                                                       |
@@ -78,6 +95,14 @@ ibus-vie-engine ──►  ibus-vie-im
 3. Không cần daemon thứ hai song song với `ibus-daemon` đã có sẵn.
 
 Giao tiếp với `ibus-daemon` qua DBus bằng crate `zbus` (Rust thuần) — không cần `libibus` C bindings.
+
+---
+
+## Yêu cầu
+
+- Rust ≥ 1.95 (stable)
+- IBus (runtime, để engine đăng ký)
+- Linux (Wayland hoặc X11)
 
 ---
 

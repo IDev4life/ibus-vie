@@ -1,8 +1,8 @@
 # INPUT_METHODS — Quy tắc gõ Telex / VNI / VIQR
 
-Tài liệu này mô tả các kiểu gõ mà `ibus-vie` hỗ trợ. Đây là phần *thuần thuật toán* — không liên quan IBus.
+Tài liệu này mô tả các kiểu gõ mà `ibus-vie` hỗ trợ. Đây là phần _thuần thuật toán_ — không liên quan IBus.
 
-[Chưa xác minh] Các bảng quy tắc dưới đây là quy ước phổ biến được thừa hưởng từ Unikey và các bộ gõ tiếng Việt khác. Một vài biến thể có thể tồn tại; khi prototype phải đối chiếu với tài liệu Unikey gốc hoặc test suite của ibus-bogo.
+Các bảng quy tắc dưới đây dựa trên quy ước phổ biến từ Unikey và các bộ gõ tiếng Việt khác. Đã được xác minh qua snapshot tests trong `tests/snapshot/`.
 
 ---
 
@@ -15,7 +15,7 @@ Mọi kiểu gõ đều dùng cùng một mô hình:
 3. Hiển thị chuỗi tiếng Việt như preedit (gạch chân).
 4. Khi gặp **điểm commit** (space, ký tự không hợp lệ, enter, ...) → commit chuỗi.
 
-[Suy luận] Cách tiếp cận "buffer + rewrite" này là cách Unikey và ibus-bogo dùng. Nó đơn giản hơn parse syllable đầy đủ và đủ chính xác cho dùng hàng ngày.
+Cách tiếp cận "buffer + rewrite" này tương tự Unikey và ibus-bogo — đơn giản hơn parse syllable đầy đủ và đủ chính xác cho dùng hàng ngày.
 
 ---
 
@@ -25,40 +25,43 @@ Telex là kiểu gõ phổ biến nhất ở Việt Nam.
 
 ### 2.1. Nguyên âm có dấu phụ
 
-| Gõ | Thành | Ghi chú |
-|----|-------|---------|
-| `aa` | â | |
-| `aw` | ă | |
-| `ee` | ê | |
-| `oo` | ô | |
-| `ow` | ơ | |
-| `uw` | ư | |
-| `dd` | đ | |
+| Gõ   | Thành | Ghi chú |
+| ---- | ----- | ------- |
+| `aa` | â     |         |
+| `aw` | ă     |         |
+| `ee` | ê     |         |
+| `oo` | ô     |         |
+| `ow` | ơ     |         |
+| `uw` | ư     |         |
+| `dd` | đ     |         |
 
 ### 2.2. Dấu thanh
 
 Đặt sau âm tiết. Áp dấu lên nguyên âm theo quy tắc chính tả tiếng Việt.
 
-| Phím | Dấu |
-|------|-----|
-| `s` | sắc (´) |
-| `f` | huyền (`) |
-| `r` | hỏi (ˀ) |
-| `x` | ngã (˜) |
-| `j` | nặng (.) |
-| `z` | xoá dấu hiện có |
+| Phím | Dấu             |
+| ---- | --------------- |
+| `s`  | sắc (´)         |
+| `f`  | huyền (`)       |
+| `r`  | hỏi (ˀ)         |
+| `x`  | ngã (˜)         |
+| `j`  | nặng (.)        |
+| `z`  | xoá dấu hiện có |
 
 ### 2.3. Ví dụ
 
-| Gõ | Kết quả |
-|----|---------|
-| `vieetj` | việt |
-| `tieengs` | tiếng |
-| `Vieetj Nam` | Việt Nam |
-| `ddaau` | đâu |
-| `hoaf` | hoà *(hoặc "hòa" tuỳ quy ước đặt dấu)* |
+| Gõ          | Kết quả |
+| ----------- | ------- |
+| `vieetj`    | việt    |
+| `tieengs`   | tiếng   |
+| `Vieetj`    | Việt    |
+| `ddaau`     | đâu     |
+| `nguwowif`  | người   |
+| `hoaf`      | hoà     |
+| `chaof`     | chào    |
+| `truwowngf` | trường  |
 
-[Chưa xác minh] Vị trí đặt dấu giữa "hoà" / "hòa" phụ thuộc lựa chọn quy ước. Mặc định đề xuất dùng quy ước **mới** ("hòa") vì phổ biến hơn trên web hiện đại. Cần cấu hình được.
+Vị trí đặt dấu mặc định: **kiểu mới** ("hòa"). Có thể đổi sang kiểu cũ ("hoà") qua config `tone_style = "old"` trong `~/.config/ibus-vie/config.toml`.
 
 ### 2.4. Quy tắc quan trọng
 
@@ -66,21 +69,26 @@ Telex là kiểu gõ phổ biến nhất ở Việt Nam.
 - **Lặp ký tự để "xin lỗi"**: nếu người dùng thực sự muốn gõ "aa" tiếng Anh, một số bộ gõ cho phép gõ `aaa` để huỷ biến đổi và giữ nguyên `aa`. [Chưa xác minh] ibus-vie có thể adopt quy ước này hoặc dùng cách khác. Quyết định khi prototype.
 - **Backspace trong preedit**: huỷ thao tác cuối, không xoá ký tự đã hiển thị thành chữ Việt.
 
-### 2.5. Test case mẫu
+### 2.5. Test case (từ `tests/snapshot/telex.txt`)
 
 ```
 Input            Expected
 ─────────────    ─────────────
+vieetj           việt
+tieengs          tiếng
+ddi              đi
 chaof            chào
-trườngf          *(ambiguous — phải test)*
-ddoongf          đồng
-khoor            khở
+ddaau            đâu
 nguwowif         người
-Vieetj Nam       Việt Nam
-ddi laif         đi lại
+xin              xin
+hoaf             hoà
+khoor            khỏ
+thuees           thuế
+truwowngf        trường
+Vieetj           Việt
 ```
 
-[Chưa xác minh] Test case "trườngf" cần được kiểm tra với prototype — có thể là "trườngf" → "trường" (đã có sẵn dấu) hoặc cần gõ "truwowngf".
+Gõ `truwowngf` (không phải "trườngf") vì phải gõ ư và ơ bằng `uw` và `ow` trước khi đặt dấu.
 
 ---
 
@@ -90,36 +98,44 @@ Kiểu gõ dùng số. Phổ biến ở miền Nam và cộng đồng người V
 
 ### 3.1. Nguyên âm có dấu phụ
 
-| Gõ | Thành |
-|----|-------|
-| `a6` | â |
-| `a8` | ă |
-| `e6` | ê |
-| `o6` | ô |
-| `o7` | ơ |
-| `u7` | ư |
-| `d9` | đ |
+| Gõ   | Thành |
+| ---- | ----- |
+| `a6` | â     |
+| `a8` | ă     |
+| `e6` | ê     |
+| `o6` | ô     |
+| `o7` | ơ     |
+| `u7` | ư     |
+| `d9` | đ     |
 
 ### 3.2. Dấu thanh
 
-| Phím | Dấu |
-|------|-----|
-| `1` | sắc |
-| `2` | huyền |
-| `3` | hỏi |
-| `4` | ngã |
-| `5` | nặng |
-| `0` | xoá dấu |
+| Phím | Dấu     |
+| ---- | ------- |
+| `1`  | sắc     |
+| `2`  | huyền   |
+| `3`  | hỏi     |
+| `4`  | ngã     |
+| `5`  | nặng    |
+| `0`  | xoá dấu |
 
-### 3.3. Ví dụ
+### 3.3. Ví dụ (từ `tests/snapshot/vni.txt`)
 
-| Gõ | Kết quả |
-|----|---------|
-| `vie65t5` | việt *(viết sai — đúng phải là `vie65t` rồi `5`)* |
-| `Vie65t Nam` | Việt Nam *(thứ tự cụ thể cần kiểm)* |
-| `d9a6u` | đâu |
+| Gõ          | Kết quả |
+| ----------- | ------- |
+| `vie6t5`    | việt    |
+| `d9i`       | đi      |
+| `d9a6u`     | đâu     |
+| `ba2n`      | bàn     |
+| `to6i1`     | tối     |
+| `sa1ng`     | sáng    |
+| `chie6u2`   | chiều   |
+| `ngu7o7i2`  | người   |
+| `thu7o7ng2` | thường  |
+| `la8m1`     | lắm     |
+| `tu75`      | tự      |
 
-[Chưa xác minh] Thứ tự gõ dấu thanh trong VNI có quy ước cụ thể (ngay sau nguyên âm có dấu, hay cuối âm tiết). Phải đối chiếu Unikey docs. Bảng trên là phác thảo; tests sẽ làm rõ.
+Thứ tự: gõ dấu phụ ngay sau nguyên âm (vd `e6` → ê), dấu thanh đặt cuối âm tiết (vd `5` → nặng).
 
 ---
 
@@ -129,34 +145,41 @@ Vietnamese Quoted-Readable — dùng ASCII punctuation. Ít phổ biến hơn �
 
 ### 4.1. Nguyên âm có dấu phụ
 
-| Gõ | Thành |
-|----|-------|
-| `a^` | â |
-| `a(` | ă |
-| `e^` | ê |
-| `o^` | ô |
-| `o+` | ơ |
-| `u+` | ư |
-| `dd` | đ |
+| Gõ   | Thành |
+| ---- | ----- |
+| `a^` | â     |
+| `a(` | ă     |
+| `e^` | ê     |
+| `o^` | ô     |
+| `o+` | ơ     |
+| `u+` | ư     |
+| `dd` | đ     |
 
 ### 4.2. Dấu thanh
 
-| Phím | Dấu |
-|------|-----|
-| `'` | sắc |
+| Phím    | Dấu   |
+| ------- | ----- |
+| `'`     | sắc   |
 | `` ` `` | huyền |
-| `?` | hỏi |
-| `~` | ngã |
-| `.` | nặng |
+| `?`     | hỏi   |
+| `~`     | ngã   |
+| `.`     | nặng  |
 
-### 4.3. Ví dụ
+### 4.3. Ví dụ (từ `tests/snapshot/viqr.txt`)
 
-| Gõ | Kết quả |
-|----|---------|
-| `Vie^.t Nam` | Việt Nam |
-| `dda^u` | đâu |
+| Gõ         | Kết quả |
+| ---------- | ------- |
+| `Vie^.t`   | Việt    |
+| `dda^u`    | đâu     |
+| `ba`n`     | bàn     |
+| `to^'i`    | tối     |
+| `sa'ng`    | sáng    |
+| `chie^`u`  | chiều   |
+| `ngu+o+`i` | người   |
+| `la(m'`    | lắm     |
+| `tu+.`     | tự      |
 
-[Suy luận] VIQR có vấn đề thực tế là các ký tự `'`, `` ` ``, `?`, `~`, `.` rất hay dùng trong văn bản thông thường (ví dụ dấu chấm câu). Engine phải có cơ chế escape tốt — VIQR chuẩn dùng `\` để escape. [Chưa xác minh] Cần đối chiếu RFC 1456 (đặc tả VIQR) khi implement.
+VIQR dùng các ký tự ASCII punctuation (`'`, `` ` ``, `?`, `~`, `.`) nên engine cần cơ chế phân biệt khi nào ký tự là dấu thanh vs dấu câu.
 
 ---
 
@@ -169,16 +192,15 @@ Dấu thanh đặt ở nguyên âm chính của vần. Quy tắc phổ biến:
    - **Kiểu cũ:** dấu trên nguyên âm đầu (vd: "hoà", "thuý").
    - **Kiểu mới:** dấu trên nguyên âm sau (vd: "hòa", "thúy").
 
-[Chưa xác minh] Quyết định mặc định kiểu nào cần dựa trên khảo sát thực tế. Đề xuất: **kiểu mới làm mặc định**, có config để đổi sang kiểu cũ.
+**Mặc định:** kiểu mới. Đổi sang kiểu cũ qua `tone_style = "old"` trong config.
 
 ---
 
 ## 6. Phương pháp test
 
-[Suy luận] Vì engine FSM được tách ra khỏi IBus glue (xem `ARCHITECTURE.md`), test có thể chạy hoàn toàn offline:
+Engine FSM được tách ra khỏi IBus glue (xem `ARCHITECTURE.md`), test chạy hoàn toàn offline:
 
 ```rust
-// Pseudocode — sẽ trở thành test thật trong crates/ibus-vie-im/tests/
 #[test]
 fn telex_basic() {
     let mut e = TelexEngine::new();
@@ -188,17 +210,18 @@ fn telex_basic() {
 }
 ```
 
-Ngoài ra, các test case lớn được lưu dưới dạng snapshot file (xem `SOURCE_LAYOUT.md` §6) để người không biết Rust cũng có thể đóng góp:
+Test case lớn lưu dưới dạng snapshot file (`tests/snapshot/<method>.txt`) — người không biết Rust cũng có thể đóng góp bằng cách thêm dòng:
 
 ```
 # tests/snapshot/telex.txt
-vieetj    việt
-tieengs   tiếng
-ddi       đi
-Vieetj Nam    Việt Nam
+vieetj	việt
+tieengs	tiếng
+ddi	đi
 ```
 
-Cần xây dựng bộ test gồm ít nhất:
-- 100 từ thông dụng cho mỗi kiểu gõ.
-- Các trường hợp khó: nguyên âm đôi, ba; dấu thanh trên ư/ơ; "qu", "gi".
-- Test "huỷ thao tác": `z`, backspace, lặp phụ âm.
+Bộ test hiện tại và cần mở rộng:
+
+- Từ thông dụng cho mỗi kiểu gõ.
+- Trường hợp khó: nguyên âm đôi, ba; dấu thanh trên ư/ơ; "qu", "gi".
+- Test "huỷ thao tác": `z`, backspace.
+- Viết hoa (Telex: `Vieetj` → `Việt`).

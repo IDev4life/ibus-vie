@@ -21,4 +21,12 @@ Rules:
 - Expected output is the final composed Vietnamese string
 - Each line tests a single word/syllable (no spaces in input unless testing word boundaries)
 
-When adding test cases, also run `cargo test --workspace` to verify they pass.
+## Current test setup
+
+Tests live as inline unit tests in each engine file (`telex.rs`, `vni.rs`, `viqr.rs`) using `engine.feed_str(input)`. The snapshot `.txt` files document expected behavior and serve as the source-of-truth reference.
+
+When adding new cases:
+
+1. Add a line to the corresponding `tests/snapshot/<method>.txt`
+2. Add a matching `#[test]` in the engine's `mod tests` block
+3. Run `cargo test --workspace` to verify

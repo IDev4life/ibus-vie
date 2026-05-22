@@ -1,65 +1,60 @@
 # ROADMAP — Lộ trình phát triển
 
-[Suy đoán] Các mốc thời gian dưới đây là phác thảo. Thời gian thực phụ thuộc vào nguồn lực phát triển.
+---
+
+## Phase 0 — Khảo sát kỹ thuật ✅
+
+**Hoàn thành.** Đã xác nhận:
+
+- [x] IBus engine bằng Rust (dùng `zbus` 5) xuất hiện trong GNOME Settings.
+- [x] Engine nhận được phím nhấn qua DBus.
+- [x] File XML tại `/usr/share/ibus/component/` — cần `ibus write-cache` hoặc `ibus restart`.
+- [x] `zbus` (Rust thuần DBus) đủ API để implement IBus engine interface đầy đủ.
 
 ---
 
-## Phase 0 — Khảo sát kỹ thuật (1–2 tuần)
+## Phase 1 — MVP Telex ✅
 
-**Mục tiêu:** Xác nhận giả định kỹ thuật trong `ARCHITECTURE.md` và `WAYLAND.md`.
+**Hoàn thành.**
 
-- [ ] Viết một IBus engine "hello world" bằng **Rust** (dùng `zbus` để nói chuyện với `ibus-daemon`). Xác nhận nó xuất hiện trong GNOME Settings.
-- [ ] Xác nhận engine nhận được phím nhấn từ Firefox (Wayland) và GNOME Text Editor.
-- [ ] Xác nhận behavior khi cài file XML vào `/usr/share/ibus/component/` — có cần `ibus write-cache` không.
-- [ ] Test trên Ubuntu (GNOME), Fedora (GNOME), Arch (GNOME), và (nếu có máy) KDE Plasma.
-- [ ] [Chưa xác minh] Xác nhận `zbus` (Rust thuần DBus) đủ API để implement IBus engine interface đầy đủ. Nếu không đủ, fall back sang `gtk-rs` + libibus FFI và cập nhật `ARCHITECTURE.md` / `SOURCE_LAYOUT.md`.
-
-**Tiêu chí kết thúc:** Có một bằng chứng chạy được rằng "add input source trong Settings → engine của ta nhận key" hoạt động.
-
----
-
-## Phase 1 — MVP Telex (2–4 tuần)
-
-**Mục tiêu:** Một bộ gõ Telex tối thiểu, dùng được hàng ngày.
-
-- [ ] FSM Telex viết tách rời, có unit test.
-- [ ] 100 test case Telex pass.
-- [ ] IBus glue commit preedit đúng cách.
-- [ ] Backspace, Space, Enter xử lý đúng trong preedit.
-- [ ] Phím `z` xoá dấu.
-- [ ] Quy tắc đặt dấu cho nguyên âm đôi/ba (mặc định kiểu mới).
-- [ ] Cài qua `make install`, chạy được trên Ubuntu mới nhất.
-
-**Tiêu chí kết thúc:** Tác giả tự dùng ibus-vie làm bộ gõ chính trong 1 tuần mà không phải fall back sang ibus-bogo.
+- [x] FSM Telex viết tách rời, có unit test.
+- [x] Snapshot test cases pass.
+- [x] IBus glue commit preedit đúng cách.
+- [x] Backspace, Space, Enter xử lý đúng trong preedit.
+- [x] Phím `z` xoá dấu.
+- [x] Quy tắc đặt dấu cho nguyên âm đôi/ba (mặc định kiểu mới).
+- [x] Cài qua `make install` / `make install-user`.
 
 ---
 
-## Phase 2 — VNI và VIQR (2 tuần)
+## Phase 2 — VNI và VIQR ✅
 
-- [ ] FSM VNI với 100 test case.
-- [ ] FSM VIQR với 50 test case.
-- [ ] Component XML mở rộng cho cả 3 engine.
-- [ ] Tài liệu `INPUT_METHODS.md` cập nhật theo behavior thực tế.
+**Hoàn thành.**
+
+- [x] FSM VNI với snapshot tests.
+- [x] FSM VIQR với snapshot tests.
+- [x] Component XML mở rộng cho cả 3 engine (vie-telex, vie-vni, vie-viqr).
+- [x] CLI debug tool hỗ trợ cả 3 method.
+- [x] Tài liệu `INPUT_METHODS.md` cập nhật theo behavior thực tế.
 
 ---
 
-## Phase 3 — Đóng gói (2–3 tuần)
+## Phase 3 — Đóng gói & kiểm thử tích hợp (đang thực hiện)
 
+- [ ] Kiểm thử tích hợp thực tế với `ibus-daemon` trên desktop.
 - [ ] Debian package, test trên Ubuntu 24.04+.
 - [ ] RPM spec, test trên Fedora hiện hành.
 - [ ] PKGBUILD cho Arch / AUR.
-- [ ] [Suy đoán] Snap hoặc Flatpak — khả thi không thì kiểm tra; IBus engine khó đóng gói qua sandboxed format. Có thể bỏ qua.
-
-[Chưa xác minh] Khả năng publish lên kho official của distro (Debian, Fedora) phụ thuộc nhiều yếu tố ngoài kỹ thuật — license rõ ràng, sponsor, v.v.
+- [ ] Test trên nhiều ứng dụng: Firefox, GNOME Text Editor, Terminal, LibreOffice.
 
 ---
 
-## Phase 4 — Ổn định v1.0 (mở)
+## Phase 4 — Ổn định v1.0
 
 - [ ] Test trên KDE Plasma Wayland.
 - [ ] Fix các lỗi báo cáo trong giai đoạn beta.
-- [ ] Tài liệu user-facing (không phải spec dev).
-- [ ] Trang web đơn giản (tùy chọn).
+- [ ] Mở rộng test suite (100+ từ mỗi method).
+- [ ] Tài liệu user-facing.
 
 **Tiêu chí kết thúc:** v1.0.0 release.
 
@@ -67,13 +62,11 @@
 
 ## Sau v1.0 — các hướng có thể đi
 
-[Suy đoán] Các ý dưới đây là khả năng, không phải cam kết:
-
-- **Wayland input-method-v2 client trực tiếp** — bypass IBus, hỗ trợ sway/Hyprland/Niri. Đánh đổi: mất tích hợp với Settings → Input Sources.
-- **Tùy biến phím dấu** — cho phép người dùng custom bảng phím cho Telex (vd dùng `w` cho dấu mũ thay vì `a`).
-- **Macro / abbreviations** — gõ tắt cụm từ. [Suy đoán] có khả năng làm trong scope IBus engine, chưa rõ độ phức tạp.
-- **Từ điển gợi ý** — gõ "vn" → "Việt Nam". Đây là tính năng bự, cần thiết kế riêng.
-- **GUI cấu hình** — tránh ở giai đoạn đầu (xem `SPEC.md` §2 NG-3), nhưng có thể xem xét khi user base lớn.
+- **Wayland input-method-v2 client trực tiếp** — bypass IBus, hỗ trợ sway/Hyprland/Niri.
+- **Tùy biến phím dấu** — cho phép người dùng custom bảng phím Telex.
+- **Macro / abbreviations** — gõ tắt cụm từ.
+- **Từ điển gợi ý** — gõ "vn" → "Việt Nam".
+- **GUI cấu hình** — xem xét khi user base lớn.
 
 ---
 

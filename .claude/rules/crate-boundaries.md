@@ -16,7 +16,7 @@ ibus-vie-engine → ibus-vie-im → ibus-vie-vi
 
 - `ibus-vie-vi` is a leaf crate — zero workspace dependencies, zero external deps.
 - `ibus-vie-im` depends only on `ibus-vie-vi`. No async, no networking, no filesystem.
-- `ibus-vie-engine` is the ONLY crate that may depend on `zbus`, `tokio`, `tracing`, `serde`, `toml`.
+- `ibus-vie-engine` is the ONLY crate that may depend on `zbus`, `tokio`, `tracing`, `tracing-subscriber`, `serde`, `toml`, `clap`, `thiserror`.
 - `ibus-vie-cli` depends only on `ibus-vie-im` and `clap`.
 
 When modifying `Cargo.toml` of any crate, verify these boundaries are preserved.

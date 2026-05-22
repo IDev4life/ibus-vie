@@ -16,6 +16,7 @@ All engines implement `trait Engine` with these methods:
 - `fn key(&mut self, ev: KeyEvent) -> Action` — core handler
 - `fn reset(&mut self)` — clear preedit
 - `fn preedit(&self) -> &str` — current composed text
+- `fn feed_str(&mut self, input: &str) -> String` — default impl: feed chars, return committed + preedit (used in tests)
 
 Return values:
 
@@ -33,4 +34,5 @@ After modifying any engine, verify manually:
 
 ```bash
 cargo run -p ibus-vie-cli -- --method telex --input "vieetj"
+cargo run -p ibus-vie-cli -- --method telex --trace --input "vieetj"  # trace FSM steps
 ```
