@@ -20,11 +20,10 @@ Engine đăng ký với IBus qua file `vie.xml` và được Mutter nhận diệ
 
 Mọi hành vi mặc định được thiết kế cho Wayland. X11 chỉ được hỗ trợ ở mức "không phá vỡ" — không phải mục tiêu chính.
 
-### G3. Hỗ trợ ba kiểu gõ phổ biến
+### G3. Hỗ trợ hai kiểu gõ phổ biến
 
 - **Telex** (mặc định)
 - **VNI**
-- **VIQR**
 
 Người dùng chuyển kiểu gõ qua menu IBus của panel hoặc shortcut.
 
@@ -66,7 +65,7 @@ Mặc định: tổ hợp phím chuyển giữa "gõ tiếng Việt" và "gõ th
 
 > "Tôi quen Telex ở máy, VNI ở chỗ làm. Tôi muốn đổi nhanh giữa hai kiểu."
 
-Cách giải quyết: ba entry IBus riêng biệt ("Vietnamese (ibus-vie — Telex)", "Vietnamese (ibus-vie — VNI)", "Vietnamese (ibus-vie — VIQR)"), người dùng add cả hai và đổi qua phím tắt input source của hệ thống (`Super+Space` trên GNOME mặc định).
+Cách giải quyết: hai entry IBus riêng biệt ("Vietnamese (ibus-vie — Telex)", "Vietnamese (ibus-vie — VNI)"), người dùng add cả hai và đổi qua phím tắt input source của hệ thống (`Super+Space` trên GNOME mặc định).
 
 ---
 
@@ -114,7 +113,7 @@ Bản v1.0 phải:
 
 - [x] Hiển thị trong Settings → Input Sources mà không cần thao tác phụ.
 - [x] Gõ được Telex chính xác cho bộ test snapshot.
-- [x] Gõ được VNI và VIQR ở mức "cơ bản dùng được".
+- [x] Gõ được VNI ở mức "cơ bản dùng được".
 - [ ] Không crash `ibus-daemon` trong 1 giờ gõ liên tục (chưa test thực tế).
 - [ ] Hoạt động trên: Firefox (Wayland), GNOME Text Editor, Terminal, LibreOffice Writer.
 - [ ] Có hướng dẫn cài cho ít nhất 1 distro (package).

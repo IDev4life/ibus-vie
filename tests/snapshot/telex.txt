@@ -37,3 +37,10 @@ thaays	thấy
 chuaw	chưa
 dduocwj	được
 thuowng	thương
+# Flexible mark position (mark key after coda consonant)
+khongo	không
+nhieuef	nhiều
+toios	tối
+moios	mối
+# Double-press undo (tone key twice → undo + literal)
+xayrr	xayr

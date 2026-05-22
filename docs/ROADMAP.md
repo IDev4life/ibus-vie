@@ -27,14 +27,13 @@
 
 ---
 
-## Phase 2 — VNI và VIQR ✅
+## Phase 2 — VNI ✅
 
 **Hoàn thành.**
 
 - [x] FSM VNI với snapshot tests.
-- [x] FSM VIQR với snapshot tests.
-- [x] Component XML mở rộng cho cả 3 engine (vie-telex, vie-vni, vie-viqr).
-- [x] CLI debug tool hỗ trợ cả 3 method.
+- [x] Component XML mở rộng cho cả 2 engine (vie-telex, vie-vni).
+- [x] CLI debug tool hỗ trợ cả 2 method.
 - [x] Tài liệu `INPUT_METHODS.md` cập nhật theo behavior thực tế.
 
 ---

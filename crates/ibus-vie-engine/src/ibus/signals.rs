@@ -20,12 +20,9 @@ pub async fn handle_surrounding_text(
             debug!(preedit, prev, "update [surrounding]");
 
             if prev > 0 {
-                let _ = IbusEngineImpl::delete_surrounding_text(
-                    emitter,
-                    -(prev as i32),
-                    prev as u32,
-                )
-                .await;
+                let _ =
+                    IbusEngineImpl::delete_surrounding_text(emitter, -(prev as i32), prev as u32)
+                        .await;
             }
 
             let _ = IbusEngineImpl::commit_text(emitter, ibus_text_value(&preedit)).await;
@@ -37,12 +34,9 @@ pub async fn handle_surrounding_text(
             debug!(text, prev, "commit [surrounding]");
 
             if prev > 0 {
-                let _ = IbusEngineImpl::delete_surrounding_text(
-                    emitter,
-                    -(prev as i32),
-                    prev as u32,
-                )
-                .await;
+                let _ =
+                    IbusEngineImpl::delete_surrounding_text(emitter, -(prev as i32), prev as u32)
+                        .await;
             }
 
             let _ = IbusEngineImpl::commit_text(emitter, ibus_text_value(&text)).await;

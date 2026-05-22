@@ -69,8 +69,9 @@ fn read_bus_file() -> Result<String, EngineError> {
     let bus_dir = dirs_path();
     let bus_file = format!("{}/{}-{}", bus_dir, machine_id, display_id);
 
-    let content = std::fs::read_to_string(&bus_file)
-        .map_err(|e| EngineError::Connection(format!("cannot read IBus bus file {}: {}", bus_file, e)))?;
+    let content = std::fs::read_to_string(&bus_file).map_err(|e| {
+        EngineError::Connection(format!("cannot read IBus bus file {}: {}", bus_file, e))
+    })?;
 
     for line in content.lines() {
         if let Some(addr) = line.strip_prefix("IBUS_ADDRESS=") {

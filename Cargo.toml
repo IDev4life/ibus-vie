@@ -1,7 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/ibus-vie-vi",
     "crates/ibus-vie-im",
     "crates/ibus-vie-engine",
     "crates/ibus-vie-cli",
@@ -34,3 +33,4 @@ toml = "1.1"
 clap = { version = "4", features = ["derive"] }
 thiserror = "2"
 insta = "1"
+vi = "0.8"

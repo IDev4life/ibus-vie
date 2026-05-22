@@ -30,22 +30,20 @@ cargo run -p ibus-vie-cli -- --method telex --trace --input "vieetj"  # trace ea
 
 ## Architecture
 
-Four crates with strict dependency boundaries:
+Three crates with strict dependency boundaries:
 
 ```
-ibus-vie-cli  ──►  ibus-vie-im  ──►  ibus-vie-vi
+ibus-vie-cli  ──►  ibus-vie-im  ──►  vi (crates.io)
 ibus-vie-engine ──►  ibus-vie-im
                  ──►  zbus, tokio, tracing, serde, toml
 ```
 
-**`ibus-vie-vi`** (leaf, no deps) — static data: Vietnamese alphabet, syllable structure, tone placement tables. No I/O.
-
-**`ibus-vie-im`** — pure FSM, no IBus, no I/O. Three engines (`TelexEngine`, `VniEngine`, `ViqrEngine`) all implement `trait Engine`:
+**`ibus-vie-im`** — pure input method logic, no IBus, no I/O. Two engines (`TelexEngine`, `VniEngine`) implement `trait Engine`. Delegates all Vietnamese text transformation (tone placement, letter modification, undo) to the [`vi`](https://crates.io/crates/vi) crate.
 
 - `fn key(&mut self, ev: KeyEvent) -> Action` — core keystroke handler
 - `fn feed_str(&mut self, input: &str) -> String` — convenience for testing (feed full string, return committed + preedit)
 - Returns `Action::Update`, `Action::Commit(String)`, or `Action::PassThrough`
-- `Buffer` in `buffer.rs` holds raw keystrokes + composed Vietnamese; all engines share it
+- `Buffer` in `buffer.rs` wraps `vi::methods::IncrementalBuffer`
 
 **`ibus-vie-engine`** — the actual binary spawned by `ibus-daemon`. Implements `org.freedesktop.IBus.Engine` DBus interface via `zbus`. `engine_impl.rs` translates IBus keyval/state integers → `KeyEvent` → delegates to `dyn Engine`. Loads config from `~/.config/ibus-vie/config.toml`.
 
@@ -60,17 +58,17 @@ ibus-vie-engine ──►  ibus-vie-im
 File: `~/.config/ibus-vie/config.toml` (optional, defaults apply if missing)
 
 ```toml
-method = "telex"       # telex | vni | viqr
+method = "telex"       # telex | vni
 tone_style = "new"     # new (hòa) | old (hoà)
 ```
 
 ## Key design rule
 
-`ibus-vie-im` and `ibus-vie-vi` must never depend on IBus, DBus, or any I/O. All IBus glue lives exclusively in `ibus-vie-engine`. This separation allows the entire input logic to be tested without a running daemon.
+`ibus-vie-im` must never depend on IBus, DBus, or any I/O. All IBus glue lives exclusively in `ibus-vie-engine`. This separation allows the entire input logic to be tested without a running daemon.
 
 ## Snapshot tests
 
-`tests/snapshot/telex.txt` (and `vni.txt`, `viqr.txt`) are tab-separated input/expected files. Adding a test case requires only adding a line — no Rust needed:
+`tests/snapshot/telex.txt` (and `vni.txt`) are tab-separated input/expected files. Adding a test case requires only adding a line — no Rust needed:
 
 ```
 vieetj	việt

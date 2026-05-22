@@ -19,10 +19,9 @@ ibus-vie/
 ├── LICENSE
 │
 ├── crates/
-│   ├── ibus-vie-vi/                   # ① Quy tắc tiếng Việt (leaf, no deps)
-│   ├── ibus-vie-im/                   # ② FSM thuần (no IBus, no DBus)
-│   ├── ibus-vie-engine/               # ③ IBus binary (DBus + glue)
-│   └── ibus-vie-cli/                  # ④ Dev tool: gõ ở terminal
+│   ├── ibus-vie-im/                   # ① FSM thuần (no IBus, no DBus, dùng vi crate)
+│   ├── ibus-vie-engine/               # ② IBus binary (DBus + glue)
+│   └── ibus-vie-cli/                  # ③ Dev tool: gõ ở terminal
 │
 ├── data/
 │   └── vie.xml.in                     # IBus component descriptor (template)
@@ -30,8 +29,7 @@ ibus-vie/
 ├── tests/
 │   └── snapshot/                      # Test case dạng text (xem §6)
 │       ├── telex.txt
-│       ├── vni.txt
-│       └── viqr.txt
+│       └── vni.txt
 │
 └── docs/
     ├── SPEC.md
@@ -45,16 +43,15 @@ ibus-vie/
 
 ---
 
-## 2. Bốn crate — ranh giới rõ
+## 2. Ba crate — ranh giới rõ
 
 | #   | Crate             | Loại | Depend gì                    | Mục đích                                                        |
 | --- | ----------------- | ---- | ---------------------------- | --------------------------------------------------------------- |
-| ①   | `ibus-vie-vi`     | lib  | không depend gì              | Dữ liệu + luật âm tiết tiếng Việt. Const tables, đặt dấu thanh. |
-| ②   | `ibus-vie-im`     | lib  | chỉ `ibus-vie-vi`            | FSM Telex/VNI/VIQR thuần. Không I/O. Không IBus.                |
-| ③   | `ibus-vie-engine` | bin  | `ibus-vie-im` + `zbus` + ... | Binary chạy bởi `ibus-daemon`. Tất cả DBus/IBus glue ở đây.     |
-| ④   | `ibus-vie-cli`    | bin  | `ibus-vie-im` + `clap`       | Tool dev. Gõ vào terminal → in ra kết quả. Không cần IBus chạy. |
+| ①   | `ibus-vie-im`     | lib  | chỉ `vi` (crates.io)         | FSM Telex/VNI thuần. Không I/O. Không IBus.                     |
+| ②   | `ibus-vie-engine` | bin  | `ibus-vie-im` + `zbus` + ... | Binary chạy bởi `ibus-daemon`. Tất cả DBus/IBus glue ở đây.     |
+| ③   | `ibus-vie-cli`    | bin  | `ibus-vie-im` + `clap`       | Tool dev. Gõ vào terminal → in ra kết quả. Không cần IBus chạy. |
 
-Quy tắc vàng: **logic gõ không được biết IBus tồn tại**. `ibus-vie-im` phải compile và test được trên một máy không có IBus, không có DBus, không có GUI. Nếu một ngày con đường IBus engine không còn phù hợp, chỉ phải viết lại `ibus-vie-engine`; `ibus-vie-im` và `ibus-vie-vi` không đổi.
+Quy tắc vàng: **logic gõ không được biết IBus tồn tại**. `ibus-vie-im` phải compile và test được trên một máy không có IBus, không có DBus, không có GUI. Nếu một ngày con đường IBus engine không còn phù hợp, chỉ phải viết lại `ibus-vie-engine`; `ibus-vie-im` không đổi.
 
 ### Dependency graph
 
@@ -64,44 +61,19 @@ ibus-vie-cli  ────────┐
                 ibus-vie-im
                     │
                     ▼
-                ibus-vie-vi
+                vi (crates.io)
 
 ibus-vie-engine ──► ibus-vie-im
               ─► zbus, tokio, tracing, serde, toml
 ```
 
-Không có cycle. `ibus-vie-vi` là "leaf" — không depend crate khác trong workspace. Điều này cho phép `cargo test -p ibus-vie-vi` chạy cực nhanh và độc lập.
+`ibus-vie-im` depend duy nhất `vi` crate (Vietnamese text transformation, MIT license). Không async, không I/O.
 
 ---
 
 ## 3. Chi tiết từng crate
 
-### 3.1. `crates/ibus-vie-vi/` — Quy tắc tiếng Việt
-
-```
-crates/ibus-vie-vi/
-├── Cargo.toml
-└── src/
-    ├── lib.rs               # re-export public API
-    ├── alphabet.rs          # const VOWELS, CONSONANTS, ...
-    ├── tone.rs              # đặt dấu thanh trên âm tiết
-    └── syllable.rs          # struct Syllable { onset, nucleus, coda, tone }
-```
-
-**Public API** (`lib.rs`):
-
-```rust
-pub mod alphabet;
-pub mod tone;
-pub mod syllable;
-
-pub use syllable::Syllable;
-pub use tone::{Tone, place_tone};
-```
-
-**Test:** mọi function public phải có ít nhất 1 unit test trong `#[cfg(test)] mod tests`.
-
-### 3.2. `crates/ibus-vie-im/` — FSM gõ
+### 3.1. `crates/ibus-vie-im/` — FSM gõ
 
 ```
 crates/ibus-vie-im/
@@ -112,9 +84,11 @@ crates/ibus-vie-im/
     ├── engine.rs            # trait Engine
     ├── telex.rs             # TelexEngine impl Engine
     ├── vni.rs               # VniEngine impl Engine
-    ├── viqr.rs              # ViqrEngine impl Engine
-    └── buffer.rs            # preedit buffer + rewrite logic chung
+    └── buffer.rs            # preedit buffer (wraps vi::IncrementalBuffer)
 ```
+
+Mọi Vietnamese text transformation (đặt dấu, mark, undo) được delegate cho `vi` crate.
+Engines chỉ là thin wrapper: push char vào `vi::IncrementalBuffer`, xử lý commit/backspace/escape.
 
 **API cốt lõi** (`engine.rs`):
 
@@ -142,7 +116,7 @@ pub enum Action {
 
 Trait `Engine` chính là **điểm tách**. `ibus-vie-engine` chỉ làm việc với `dyn Engine` — không quan tâm Telex hay VNI. Thêm kiểu gõ mới = thêm một file impl `Engine`, không sửa engine binary.
 
-### 3.3. `crates/ibus-vie-engine/` — IBus binary
+### 3.2. `crates/ibus-vie-engine/` — IBus binary
 
 ```
 crates/ibus-vie-engine/
@@ -177,7 +151,7 @@ chạy tokio event loop (current_thread runtime)
 
 IBus interface `org.freedesktop.IBus.Factory` và `org.freedesktop.IBus.Engine` được implement qua `zbus` 5.
 
-### 3.4. `crates/ibus-vie-cli/` — Dev tool
+### 3.3. `crates/ibus-vie-cli/` — Dev tool
 
 ```
 crates/ibus-vie-cli/
@@ -221,7 +195,6 @@ ibus-vie-cli --method telex --trace        # in từng bước FSM
 [workspace]
 resolver = "2"
 members = [
-    "crates/ibus-vie-vi",
     "crates/ibus-vie-im",
     "crates/ibus-vie-engine",
     "crates/ibus-vie-cli",
@@ -402,7 +375,7 @@ Chưa cần integration test với IBus thật trong CI ở giai đoạn đầu 
 
 Mỗi PR thêm tính năng nên trả lời được:
 
-1. **Tính năng này thuộc crate nào?** Nếu là logic gõ → `ibus-vie-im`. Nếu là quy tắc tiếng Việt → `ibus-vie-vi`. Nếu là cách giao tiếp IBus → `ibus-vie-engine`. Nếu là dev tool → `ibus-vie-cli`.
+1. **Tính năng này thuộc crate nào?** Nếu là logic gõ → `ibus-vie-im`. Nếu là cách giao tiếp IBus → `ibus-vie-engine`. Nếu là dev tool → `ibus-vie-cli`.
 2. **Có thêm test snapshot không?** Mọi thay đổi gõ phải có ít nhất 1 dòng mới trong `tests/snapshot/<method>.txt`.
 3. **Có ảnh hưởng API public không?** Nếu có, cập nhật doc comment.
 4. **Có thay đổi dependency không?** Tránh tăng dependency tree một cách không cần thiết.
@@ -414,8 +387,6 @@ Mỗi PR thêm tính năng nên trả lời được:
 | Muốn sửa                  | File                                                                       |
 | ------------------------- | -------------------------------------------------------------------------- |
 | Một từ Telex gõ sai       | `tests/snapshot/telex.txt` (thêm test) + `crates/ibus-vie-im/src/telex.rs` |
-| Bảng phụ âm tiếng Việt    | `crates/ibus-vie-vi/src/alphabet.rs`                                       |
-| Quy tắc đặt dấu           | `crates/ibus-vie-vi/src/tone.rs`                                           |
 | Cách IBus gọi engine      | `crates/ibus-vie-engine/src/ibus/engine_impl.rs`                           |
 | Config user               | `crates/ibus-vie-engine/src/config.rs`                                     |
 | Tool gõ thử ở terminal    | `crates/ibus-vie-cli/src/main.rs`                                          |

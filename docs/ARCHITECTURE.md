@@ -28,10 +28,10 @@ Tài liệu này mô tả cách `ibus-vie` được tổ chức bên trong. Cầ
 ┌─────────────────────────────────────────────────────────────┐
 │  ibus-vie engine                                             │
 │  ┌───────────────┐  ┌──────────────┐  ┌─────────────────┐   │
-│  │ IBus Engine   │  │ Input Method │  │ Vietnamese      │   │
-│  │ glue (zbus)   │──│ FSM          │──│ syllable rules  │   │
+│  │ IBus Engine   │  │ Input Method │  │ vi crate        │   │
+│  │ glue (zbus)   │──│ FSM          │──│ (crates.io)     │   │
 │  └───────────────┘  └──────────────┘  └─────────────────┘   │
-│  ibus-vie-engine      ibus-vie-im        ibus-vie-vi         │
+│  ibus-vie-engine      ibus-vie-im        vi (Vietnamese)     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -99,17 +99,6 @@ File template: `data/vie.xml.in`, cài tại `/usr/share/ibus/component/vie.xml`
       <symbol>VI</symbol>
       <rank>49</rank>
     </engine>
-    <engine>
-      <name>vie-viqr</name>
-      <language>vi</language>
-      <license>GPL-3.0-or-later</license>
-      <author>dev1sme</author>
-      <layout>us</layout>
-      <longname>Vietnamese (ibus-vie — VIQR)</longname>
-      <description>Vietnamese VIQR input via ibus-vie</description>
-      <symbol>VI</symbol>
-      <rank>48</rank>
-    </engine>
   </engines>
 </component>
 ```
@@ -171,13 +160,14 @@ pub struct KeyEvent {
 
 Tách FSM ra khỏi IBus glue cho phép viết unit test mà không cần chạy `ibus-daemon`.
 
-### 3.4. Vietnamese syllable rules
+### 3.4. Vietnamese text transformation
 
-Crate `ibus-vie-vi` — bảng dữ liệu tĩnh:
+Crate [`vi`](https://crates.io/crates/vi) (external, MIT license) xử lý:
 
-- Tập nguyên âm / phụ âm hợp lệ tiếng Việt (`alphabet.rs`)
-- Cấu trúc âm tiết (`syllable.rs`)
-- Vị trí đặt dấu thanh (`tone.rs`) — mặc định kiểu mới ("hòa"), có config để đổi sang kiểu cũ ("hoà")
+- Tone placement (đặt dấu thanh) — mặc định kiểu mới ("hòa"), có config để đổi sang kiểu cũ ("hoà")
+- Letter modification (circumflex, breve, horn, đ)
+- Undo on double-press
+- Telex & VNI definitions
 
 ---
 
@@ -189,16 +179,14 @@ ibus-vie/
 ├── rust-toolchain.toml       # pin stable toolchain
 ├── Makefile                  # Wrapper tiện ích quanh cargo
 ├── crates/
-│   ├── ibus-vie-vi/            # Quy tắc âm tiết tiếng Việt (leaf, no deps)
-│   ├── ibus-vie-im/            # FSM thuần — KHÔNG depend IBus
+│   ├── ibus-vie-im/            # FSM thuần — KHÔNG depend IBus, dùng vi crate
 │   ├── ibus-vie-engine/        # IBus binary (giao tiếp DBus)
 │   └── ibus-vie-cli/           # Tool debug FSM ở terminal
 ├── data/
 │   └── vie.xml.in            # IBus component descriptor (template)
 ├── tests/snapshot/           # Test case dạng text, dễ contribute
 │   ├── telex.txt
-│   ├── vni.txt
-│   └── viqr.txt
+│   └── vni.txt
 └── docs/
 ```
 

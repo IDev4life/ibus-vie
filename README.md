@@ -70,19 +70,18 @@ tone_style = "new"     # new (hòa) | old (hoà)
 ## Kiến trúc
 
 ```
-ibus-vie-cli  ──►  ibus-vie-im  ──►  ibus-vie-vi
+ibus-vie-cli  ──►  ibus-vie-im  ──►  vi (crates.io)
 ibus-vie-engine ──►  ibus-vie-im
                  ──►  zbus, tokio, tracing, serde, toml
 ```
 
 | Crate             | Loại | Mục đích                                                       |
 | ----------------- | ---- | -------------------------------------------------------------- |
-| `ibus-vie-vi`     | lib  | Dữ liệu + luật âm tiết tiếng Việt. Const tables, đặt dấu thanh |
-| `ibus-vie-im`     | lib  | FSM Telex/VNI/VIQR thuần. Không I/O. Không IBus                |
+| `ibus-vie-im`     | lib  | FSM Telex/VNI thuần. Không I/O. Không IBus. Dùng `vi` crate    |
 | `ibus-vie-engine` | bin  | Binary chạy bởi `ibus-daemon`. Tất cả DBus/IBus glue ở đây     |
 | `ibus-vie-cli`    | bin  | Tool dev. Gõ vào terminal → in ra kết quả. Không cần IBus chạy |
 
-**Quy tắc vàng:** logic gõ (`ibus-vie-im`, `ibus-vie-vi`) không được biết IBus tồn tại.
+**Quy tắc vàng:** logic gõ (`ibus-vie-im`) không được biết IBus tồn tại.
 
 ---
 

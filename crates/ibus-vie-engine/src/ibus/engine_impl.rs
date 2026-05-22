@@ -109,12 +109,7 @@ impl IbusEngineImpl {
         }
     }
 
-    fn set_surrounding_text(
-        &mut self,
-        _text: Value<'_>,
-        _cursor_index: u32,
-        _anchor_pos: u32,
-    ) {
+    fn set_surrounding_text(&mut self, _text: Value<'_>, _cursor_index: u32, _anchor_pos: u32) {
         if !self.has_surrounding_text {
             debug!("surrounding text support detected");
             self.has_surrounding_text = true;

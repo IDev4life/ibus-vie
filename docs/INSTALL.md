@@ -93,7 +93,6 @@ Bấm **+**, chọn **Vietnamese**, chọn một trong các entry:
 
 - Vietnamese (ibus-vie — Telex)
 - Vietnamese (ibus-vie — VNI)
-- Vietnamese (ibus-vie — VIQR)
 
 ### Bước 4. Chuyển input source
 
@@ -111,7 +110,7 @@ Mở GNOME Text Editor, gõ `xin chaof` → mong đợi: `xin chào`.
 File: `~/.config/ibus-vie/config.toml` (tạo nếu cần, không bắt buộc — defaults đủ dùng):
 
 ```toml
-method = "telex"       # telex | vni | viqr
+method = "telex"       # telex | vni
 tone_style = "new"     # new (hòa) | old (hoà)
 ```
 

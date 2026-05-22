@@ -7,7 +7,7 @@ globs: crates/ibus-vie-im/src/**/*.rs
 
 ## Every change requires a test
 
-Any modification to `telex.rs`, `vni.rs`, `viqr.rs`, `buffer.rs`, or `engine.rs` MUST include at least one new test case — either a unit test in the file or a line in the corresponding `tests/snapshot/*.txt`.
+Any modification to `telex.rs`, `vni.rs`, `buffer.rs`, or `engine.rs` MUST include at least one new test case — either a unit test in the file or a line in the corresponding `tests/snapshot/*.txt`.
 
 ## trait Engine contract
 
@@ -24,9 +24,9 @@ Return values:
 - `Action::Commit(String)` — send text to app, the committed string includes the trigger character
 - `Action::PassThrough` — engine doesn't handle this key
 
-## Buffer is shared
+## Buffer wraps vi-rs
 
-All engines use `Buffer` from `buffer.rs`. Do not duplicate buffer logic in engine files.
+All engines use `Buffer` from `buffer.rs`, which wraps `vi::methods::IncrementalBuffer`. Vietnamese text transformation (tone placement, letter modification, undo on double-press) is handled entirely by the `vi` crate. Do not reimplement transformation logic in engine files.
 
 ## Verify with CLI after changes
 

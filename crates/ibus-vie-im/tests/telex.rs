@@ -82,3 +82,27 @@ fn w_single_u() {
 fn w_single_a() {
     assert_eq!(feed("aw"), "ă");
 }
+
+#[test]
+fn flexible_mark_oo_after_coda() {
+    // 'o' after coda "ng" marks earlier 'o' to 'ô'
+    assert_eq!(feed("khongo"), "không");
+}
+
+#[test]
+fn flexible_mark_ee_after_vowel() {
+    // 'e' after 'u' marks earlier 'e' to 'ê', then tone
+    assert_eq!(feed("nhieuef"), "nhiều");
+}
+
+#[test]
+fn tone_double_press_undo() {
+    // Second 'r' undoes hook tone and appends literal 'r'
+    assert_eq!(feed("xayrr"), "xayr");
+}
+
+#[test]
+fn tone_double_press_undo_s() {
+    // Second 's' undoes acute tone and appends literal 's'
+    assert_eq!(feed("bass"), "bas");
+}

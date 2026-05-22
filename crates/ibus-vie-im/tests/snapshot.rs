@@ -35,7 +35,8 @@ fn run_snapshot(path: &Path, mut engine_factory: impl FnMut() -> Box<dyn Engine>
         let actual = engine.feed_str(input);
 
         assert_eq!(
-            actual, expected,
+            actual,
+            expected,
             "{}:{}: input={:?} expected={:?} got={:?}",
             path.display(),
             line_num,

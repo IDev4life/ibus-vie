@@ -9,7 +9,7 @@ publish.workspace = true
 description = "Input method FSM for Vietnamese (Telex, VNI, VIQR)"
 
 [dependencies]
-ibus-vie-vi = { path = "../ibus-vie-vi" }
+vi.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

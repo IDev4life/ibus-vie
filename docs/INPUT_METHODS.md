@@ -1,4 +1,4 @@
-# INPUT_METHODS — Quy tắc gõ Telex / VNI / VIQR
+# INPUT_METHODS — Quy tắc gõ Telex / VNI
 
 Tài liệu này mô tả các kiểu gõ mà `ibus-vie` hỗ trợ. Đây là phần _thuần thuật toán_ — không liên quan IBus.
 
@@ -139,51 +139,7 @@ Thứ tự: gõ dấu phụ ngay sau nguyên âm (vd `e6` → ê), dấu thanh �
 
 ---
 
-## 4. VIQR
-
-Vietnamese Quoted-Readable — dùng ASCII punctuation. Ít phổ biến hơn ở người dùng cuối, nhưng vẫn được dùng trong môi trường text-only và email cổ.
-
-### 4.1. Nguyên âm có dấu phụ
-
-| Gõ   | Thành |
-| ---- | ----- |
-| `a^` | â     |
-| `a(` | ă     |
-| `e^` | ê     |
-| `o^` | ô     |
-| `o+` | ơ     |
-| `u+` | ư     |
-| `dd` | đ     |
-
-### 4.2. Dấu thanh
-
-| Phím    | Dấu   |
-| ------- | ----- |
-| `'`     | sắc   |
-| `` ` `` | huyền |
-| `?`     | hỏi   |
-| `~`     | ngã   |
-| `.`     | nặng  |
-
-### 4.3. Ví dụ (từ `tests/snapshot/viqr.txt`)
-
-| Gõ         | Kết quả |
-| ---------- | ------- |
-| `Vie^.t`   | Việt    |
-| `dda^u`    | đâu     |
-| `ba`n`     | bàn     |
-| `to^'i`    | tối     |
-| `sa'ng`    | sáng    |
-| `chie^`u`  | chiều   |
-| `ngu+o+`i` | người   |
-| `la(m'`    | lắm     |
-| `tu+.`     | tự      |
-
-VIQR dùng các ký tự ASCII punctuation (`'`, `` ` ``, `?`, `~`, `.`) nên engine cần cơ chế phân biệt khi nào ký tự là dấu thanh vs dấu câu.
-
----
-
-## 5. Quy tắc đặt dấu thanh (chung cho cả 3 kiểu)
+## 4. Quy tắc đặt dấu thanh (chung cho cả 2 kiểu)
 
 Dấu thanh đặt ở nguyên âm chính của vần. Quy tắc phổ biến:
 
@@ -196,7 +152,7 @@ Dấu thanh đặt ở nguyên âm chính của vần. Quy tắc phổ biến:
 
 ---
 
-## 6. Phương pháp test
+## 5. Phương pháp test
 
 Engine FSM được tách ra khỏi IBus glue (xem `ARCHITECTURE.md`), test chạy hoàn toàn offline:
 

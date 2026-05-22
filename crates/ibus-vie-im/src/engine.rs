@@ -6,9 +6,9 @@ use crate::buffer::{is_commit_trigger, Buffer};
 /// Each engine (Telex, VNI) implements this trait.
 /// The engine is pure logic — no I/O, no IBus dependency.
 ///
-/// Engines only need to implement `buffer()`, `buffer_mut()`, and `process_char()`.
-/// The common key handling (backspace, escape, commit triggers, non-alpha commit,
-/// regular char append) is provided by the default `key()` implementation.
+/// Engines only need to implement `buffer()`, `buffer_mut()`, and optionally
+/// `process_char()` for method-specific key interception (e.g., VNI digits).
+/// The common key handling is provided by the default `key()` implementation.
 pub trait Engine {
     /// Access the internal buffer (immutable).
     fn buffer(&self) -> &Buffer;
@@ -17,15 +17,17 @@ pub trait Engine {
     fn buffer_mut(&mut self) -> &mut Buffer;
 
     /// Engine-specific character processing.
-    /// Return `Some(Action)` if the engine handled the character,
-    /// or `None` to fall through to default handling (append or commit).
-    fn process_char(&mut self, c: char) -> Option<Action>;
+    /// Return `Some(Action)` if the engine handled the character specially,
+    /// or `None` to fall through to default handling (push to vi-rs buffer).
+    fn process_char(&mut self, _c: char) -> Option<Action> {
+        None
+    }
 
     /// Push a key event into the engine. Returns an action describing what to do.
     ///
     /// Default implementation handles common boilerplate:
     /// backspace (replay), escape (clear), commit triggers, non-alphabetic commit,
-    /// and regular character appending. Engine-specific logic goes in `process_char()`.
+    /// and regular character pushing to vi-rs.
     fn key(&mut self, ev: KeyEvent) -> Action {
         // Handle backspace
         if ev.backspace {
@@ -68,7 +70,7 @@ pub trait Engine {
             return Action::Commit(committed);
         }
 
-        // Engine-specific logic
+        // Engine-specific logic (e.g., VNI digit handling)
         if let Some(action) = self.process_char(c) {
             return action;
         }
@@ -83,8 +85,8 @@ pub trait Engine {
             return Action::Commit(committed);
         }
 
-        // Regular character: just append
-        self.buffer_mut().push(c, |s, ch| format!("{}{}", s, ch));
+        // Regular character: push to vi-rs buffer which handles transformations
+        self.buffer_mut().push(c);
         Action::Update
     }
 
