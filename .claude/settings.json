@@ -1,0 +1,29 @@
+{
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'f=\"$CLAUDE_TOOL_INPUT_FILE_PATH\"; [[ \"$f\" == *.rs ]] && crate=$(basename $(dirname $(dirname \"$f\"))) && cargo clippy -p \"$crate\" 2>&1 | head -40 || true'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '[[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" == */Cargo.lock ]] && echo \"BLOCK: Cargo.lock chỉ sửa qua cargo, không edit trực tiếp\" && exit 1 || true'"
+          }
+        ]
+      }
+    ]
+  }
+}
