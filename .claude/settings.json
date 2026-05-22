@@ -24,6 +24,7 @@
     ]
   },
   "enabledPlugins": {
-    "claude-code-setup@claude-plugins-official": false
+    "claude-code-setup@claude-plugins-official": false,
+    "git-workflow@IDev4life-marketplace": true
   }
 }
