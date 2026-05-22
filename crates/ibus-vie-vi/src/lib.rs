@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub mod alphabet;
 pub mod syllable;
 pub mod tone;

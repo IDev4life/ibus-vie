@@ -24,18 +24,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: EmbarkStudios/cargo-deny-action@v2
-
-  geiger:
-    name: cargo geiger
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@v1
-        with:
-          toolchain: stable
-      - uses: Swatinem/rust-cache@v2
-      - uses: baptiste0928/cargo-install@v3
-        with:
-          crate: cargo-geiger
-      - name: Report unsafe usage
-        run: cargo geiger --workspace

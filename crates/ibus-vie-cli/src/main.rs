@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use clap::Parser;
 use ibus_vie_im::{Engine, TelexEngine, ViqrEngine, VniEngine};
 use std::io::{self, BufRead, Write};
