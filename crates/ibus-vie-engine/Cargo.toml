@@ -5,6 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+publish.workspace = true
 description = "IBus engine binary for Vietnamese input (ibus-vie)"
 
 [[bin]]
