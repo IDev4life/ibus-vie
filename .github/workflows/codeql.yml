@@ -10,30 +10,12 @@ on:
 
 jobs:
   codeql:
-    runs-on: ubuntu-24.04
     permissions:
       contents: read
       security-events: write
       actions: read
       packages: read
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@v1
-        with:
-          toolchain: stable
-
-      - uses: Swatinem/rust-cache@v2
-
-      - uses: github/codeql-action/init@v3
-        with:
-          languages: rust
-          queries: security-extended,security-and-quality
-
-      - name: Build
-        run: cargo build --workspace
-
-      - uses: github/codeql-action/analyze@v3
-        with:
-          category: /language:rust
+    uses: IDev4life/.github/.github/workflows/codeql.yml@v1.0.2
+    with:
+      languages: '["rust"]'
+      build_mode: none
