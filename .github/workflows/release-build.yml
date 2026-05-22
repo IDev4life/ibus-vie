@@ -9,6 +9,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
@@ -76,8 +77,6 @@ jobs:
           echo "DEB=$DEB" >> $GITHUB_ENV
 
       - name: Upload to release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
             "${{ env.ARCHIVE }}" "${{ env.DEB }}" --clobber
@@ -88,8 +87,6 @@ jobs:
     needs: build
     steps:
       - name: Download release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download "${{ github.event.release.tag_name }}" \
             --pattern "*.tar.gz" --pattern "*.deb" --dir artifacts/
@@ -100,8 +97,6 @@ jobs:
           sha256sum *.tar.gz *.deb > SHA256SUMS.txt
 
       - name: Upload checksums
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
             artifacts/SHA256SUMS.txt --clobber
