@@ -14,6 +14,9 @@ const FACTORY_PATH: &str = "/org/freedesktop/IBus/Factory";
 /// Updated by property_activate, read by factory on CreateEngine.
 static ACTIVE_METHOD: Mutex<Option<String>> = Mutex::new(None);
 
+/// Shared active preedit underline state across all engine instances.
+static ACTIVE_PREEDIT_UNDERLINE: Mutex<Option<u32>> = Mutex::new(None);
+
 /// Get the current active method (returns None if never set).
 pub fn get_active_method() -> Option<String> {
     ACTIVE_METHOD.lock().unwrap().clone()
@@ -22,6 +25,16 @@ pub fn get_active_method() -> Option<String> {
 /// Set the active method (called from property_activate).
 pub fn set_active_method(method: &str) {
     *ACTIVE_METHOD.lock().unwrap() = Some(method.to_string());
+}
+
+/// Get the current active preedit underline value (returns None if never set).
+pub fn get_active_preedit_underline() -> Option<u32> {
+    *ACTIVE_PREEDIT_UNDERLINE.lock().unwrap()
+}
+
+/// Set the active preedit underline value (called from property_activate).
+pub fn set_active_preedit_underline(v: u32) {
+    *ACTIVE_PREEDIT_UNDERLINE.lock().unwrap() = Some(v);
 }
 
 /// Register the engine factory with the DBus connection.
@@ -73,8 +86,10 @@ impl EngineFactory {
         info!("creating engine '{}' at path {}", engine_name, path);
 
         let method = get_active_method().unwrap_or_else(|| self.config.method.clone());
+        let preedit_underline = get_active_preedit_underline()
+            .unwrap_or_else(|| self.config.preedit_underline_value());
 
-        let engine = IbusEngineImpl::new(method);
+        let engine = IbusEngineImpl::new(method, preedit_underline);
 
         server
             .at(path.as_str(), engine)

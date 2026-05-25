@@ -8,11 +8,10 @@ const PROP_TYPE_RADIO: u32 = 2;
 const PROP_STATE_UNCHECKED: u32 = 0;
 const PROP_STATE_CHECKED: u32 = 1;
 
-/// Build the IBusPropList for the method selector menu.
+/// Build the IBusPropList for the method selector menu and preedit underline menu.
 ///
-/// Creates a menu with Telex and VNI radio items.
-/// The `active_method` determines which item is checked.
-pub fn method_prop_list(active_method: &str) -> Value<'static> {
+/// Creates a method menu (Telex/VNI) and a preedit underline menu.
+pub fn method_prop_list(active_method: &str, preedit_underline: u32) -> Value<'static> {
     let telex_checked = if active_method == "telex" {
         PROP_STATE_CHECKED
     } else {
@@ -43,8 +42,52 @@ pub fn method_prop_list(active_method: &str) -> Value<'static> {
     };
     let menu_prop = ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props));
 
+    // Preedit underline submenu
+    let preedit_menu = build_preedit_menu(preedit_underline);
+
     // Top-level prop list
-    ibus_prop_list(&[menu_prop])
+    ibus_prop_list(&[menu_prop, preedit_menu])
+}
+
+/// Build an updated IBusProperty for the preedit underline menu.
+pub fn preedit_menu_property(preedit_underline: u32) -> Value<'static> {
+    build_preedit_menu(preedit_underline)
+}
+
+fn build_preedit_menu(preedit_underline: u32) -> Value<'static> {
+    let single_checked = if preedit_underline == 1 {
+        PROP_STATE_CHECKED
+    } else {
+        PROP_STATE_UNCHECKED
+    };
+    let none_checked = if preedit_underline == 0 {
+        PROP_STATE_CHECKED
+    } else {
+        PROP_STATE_UNCHECKED
+    };
+
+    let single_prop = ibus_property(
+        "preedit-underline-single",
+        PROP_TYPE_RADIO,
+        "Gạch đơn",
+        single_checked,
+        None,
+    );
+    let none_prop = ibus_property(
+        "preedit-underline-none",
+        PROP_TYPE_RADIO,
+        "Không gạch chân",
+        none_checked,
+        None,
+    );
+    let sub_props = ibus_prop_list(&[single_prop, none_prop]);
+
+    let label = if preedit_underline == 1 {
+        "Gạch đơn"
+    } else {
+        "Không gạch chân"
+    };
+    ibus_property("preedit-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
 }
 
 /// Build an updated IBusProperty for the method menu label.
