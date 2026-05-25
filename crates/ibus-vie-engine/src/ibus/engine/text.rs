@@ -8,7 +8,8 @@ pub fn ibus_lookup_table(preedit: &str) -> Value<'static> {
     let mut candidates = Array::new(&Signature::Variant);
     candidates.append(Value::Value(Box::new(candidate))).expect("valid candidate");
 
-    let empty_labels = Array::new(&Signature::Variant);
+    let mut empty_labels = Array::new(&Signature::Variant);
+    empty_labels.append(Value::Value(Box::new(ibus_text_value("")))).expect("valid label");
 
     let table = StructureBuilder::new()
         .append_field(Value::Str("IBusLookupTable".into()))
