@@ -9,12 +9,13 @@ use zbus::zvariant::Value;
 
 use super::factory;
 
+// Keys forwarded by the engine carry this bit so the engine ignores them on re-injection.
+const IBUS_FORWARD_MASK: u32 = 1 << 25;
+
 pub struct IbusEngineImpl {
     engine: Box<dyn Engine + Send + Sync>,
     method: String,
     input_mode: String,
-    /// Number of chars currently forwarded to the app (forward-key mode only).
-    pub forwarded_len: usize,
 }
 
 impl IbusEngineImpl {
@@ -24,7 +25,7 @@ impl IbusEngineImpl {
             _ => Box::new(TelexEngine::new()),
         };
         info!("engine created with method: {}, mode: {}", method, input_mode);
-        Self { engine, method, input_mode, forwarded_len: 0 }
+        Self { engine, method, input_mode }
     }
 
     pub fn engine(&self) -> &dyn Engine {
@@ -50,6 +51,11 @@ impl IbusEngineImpl {
         _keycode: u32,
         state: u32,
     ) -> bool {
+        // Ignore keys we forwarded ourselves to avoid re-injection loops.
+        if (state & IBUS_FORWARD_MASK) != 0 {
+            return false;
+        }
+
         let is_release = (state & (1 << 30)) != 0;
         if is_release {
             return false;
@@ -59,9 +65,7 @@ impl IbusEngineImpl {
         let has_alt = (state & (1 << 3)) != 0;
         if has_ctrl || has_alt {
             if !self.engine.preedit().is_empty() {
-                if self.is_forward_mode() {
-                    self.forwarded_len = 0;
-                } else {
+                if !self.is_forward_mode() {
                     output::commit_pending_preedit(self, &emitter).await;
                 }
             }
@@ -72,21 +76,15 @@ impl IbusEngineImpl {
         let ev = match keyval {
             0xff08 => KeyEvent::backspace(),
             0xff1b => {
-                if self.is_forward_mode() {
-                    self.forwarded_len = 0;
-                } else {
+                if !self.is_forward_mode() {
                     output::hide_preedit(&emitter).await;
                 }
                 self.engine.reset();
                 return false;
             }
             0xff0d => {
-                if !self.engine.preedit().is_empty() {
-                    if self.is_forward_mode() {
-                        self.forwarded_len = 0;
-                    } else {
-                        output::commit_pending_preedit(self, &emitter).await;
-                    }
+                if !self.engine.preedit().is_empty() && !self.is_forward_mode() {
+                    output::commit_pending_preedit(self, &emitter).await;
                 }
                 self.engine.reset();
                 return false;
@@ -95,10 +93,12 @@ impl IbusEngineImpl {
             _ => return false,
         };
 
-        let action = self.engine.key(ev);
         if self.is_forward_mode() {
-            output::handle_forward_key(self, &emitter, action).await
+            let prev_preedit = self.engine.preedit().to_string();
+            let action = self.engine.key(ev);
+            output::handle_forward_key(self, &emitter, action, &prev_preedit).await
         } else {
+            let action = self.engine.key(ev);
             output::handle_preedit(self, &emitter, action).await
         }
     }
@@ -109,8 +109,7 @@ impl IbusEngineImpl {
 
     async fn focus_out(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
         if self.is_forward_mode() {
-            // Forwarded chars are already in the app — just reset state.
-            self.forwarded_len = 0;
+            // Forwarded chars are already committed to the app — just reset engine state.
         } else if !self.engine.preedit().is_empty() {
             output::commit_pending_preedit(self, &emitter).await;
         }
@@ -119,9 +118,7 @@ impl IbusEngineImpl {
     }
 
     async fn reset(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
-        if self.is_forward_mode() {
-            self.forwarded_len = 0;
-        } else if !self.engine.preedit().is_empty() {
+        if !self.is_forward_mode() && !self.engine.preedit().is_empty() {
             output::hide_preedit(&emitter).await;
         }
         self.engine.reset();
@@ -138,7 +135,6 @@ impl IbusEngineImpl {
 
     fn disable(&mut self) {
         self.engine.reset();
-        self.forwarded_len = 0;
         debug!(method = %self.method, "engine disabled");
     }
 
@@ -170,12 +166,8 @@ impl IbusEngineImpl {
                     return;
                 }
 
-                if !self.engine.preedit().is_empty() {
-                    if self.is_forward_mode() {
-                        self.forwarded_len = 0;
-                    } else {
-                        output::commit_pending_preedit(self, &emitter).await;
-                    }
+                if !self.engine.preedit().is_empty() && !self.is_forward_mode() {
+                    output::commit_pending_preedit(self, &emitter).await;
                 }
 
                 self.method = new_method.to_string();
@@ -197,16 +189,10 @@ impl IbusEngineImpl {
                     return;
                 }
 
-                // Flush any in-progress composition before switching.
-                if !self.engine.preedit().is_empty() {
-                    if self.is_forward_mode() {
-                        self.forwarded_len = 0;
-                    } else {
-                        output::commit_pending_preedit(self, &emitter).await;
-                    }
+                if !self.engine.preedit().is_empty() && !self.is_forward_mode() {
+                    output::commit_pending_preedit(self, &emitter).await;
                 }
                 self.engine.reset();
-                self.forwarded_len = 0;
 
                 self.input_mode = new_mode.to_string();
                 factory::set_active_input_mode(new_mode);

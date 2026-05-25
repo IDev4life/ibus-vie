@@ -38,25 +38,30 @@ pub async fn handle_preedit(
     }
 }
 
+/// Forward-key mode: send delta key events instead of UpdatePreeditText.
+///
+/// `prev_preedit` is the engine preedit BEFORE the key was processed.
+/// Uses a delta approach: only forward the minimal backspace+chars needed,
+/// which avoids Chrome's "erase-all-then-retype" display lag.
 pub async fn handle_forward_key(
     engine: &mut IbusEngineImpl,
     emitter: &SignalEmitter<'_>,
     action: Action,
+    prev_preedit: &str,
 ) -> bool {
     match action {
         Action::Update => {
             let new_preedit = engine.engine().preedit().to_string();
             debug!(preedit = new_preedit, "update [forward]");
-            forward_replace(emitter, engine.forwarded_len, &new_preedit).await;
-            engine.forwarded_len = new_preedit.chars().count();
+            forward_delta(emitter, prev_preedit, &new_preedit).await;
             true
         }
         Action::Commit(text) => {
             debug!(text, "commit [forward]");
-            for _ in 0..engine.forwarded_len {
+            let prev_len = prev_preedit.chars().count();
+            for _ in 0..prev_len {
                 let _ = IbusEngineImpl::forward_key_event(emitter, KEYVAL_BACKSPACE, 0, 0).await;
             }
-            engine.forwarded_len = 0;
             let _ = IbusEngineImpl::commit_text(emitter, ibus_text_value(&text)).await;
             engine.engine_mut().reset();
             true
@@ -65,18 +70,30 @@ pub async fn handle_forward_key(
     }
 }
 
-/// Erase `old_len` forwarded chars then forward all chars of `new_text`.
-async fn forward_replace(emitter: &SignalEmitter<'_>, old_len: usize, new_text: &str) {
-    for _ in 0..old_len {
+/// Forward only the minimal diff between `old` and `new` preedit.
+///
+/// For simple appends (typing one more char), this sends exactly one
+/// ForwardKeyEvent without any backspacing — Chrome and terminals see
+/// each character appear immediately as typed.
+async fn forward_delta(emitter: &SignalEmitter<'_>, old: &str, new: &str) {
+    let common = old
+        .chars()
+        .zip(new.chars())
+        .take_while(|(a, b)| a == b)
+        .count();
+
+    let backspace_count = old.chars().count() - common;
+    for _ in 0..backspace_count {
         let _ = IbusEngineImpl::forward_key_event(emitter, KEYVAL_BACKSPACE, 0, 0).await;
     }
-    for c in new_text.chars() {
+    for c in new.chars().skip(common) {
         let _ = IbusEngineImpl::forward_key_event(emitter, char_to_keyval(c), 0, 0).await;
     }
 }
 
 fn char_to_keyval(c: char) -> u32 {
     let cp = c as u32;
+    // Latin-1 range fits directly; everything else uses the X Unicode keyval prefix.
     if cp <= 0xFF { cp } else { 0x01000000 | cp }
 }
 
