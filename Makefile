@@ -3,7 +3,7 @@ LIBEXEC_DIR ?= $(PREFIX)/libexec
 IBUS_DIR    ?= $(PREFIX)/share/ibus/component
 BIN_DIR     ?= $(PREFIX)/bin
 
-.PHONY: build install uninstall test fmt lint clean
+.PHONY: build install uninstall install-user setup-user test fmt lint clean
 
 build:
 	cargo build --release
@@ -42,3 +42,12 @@ install-user: build
 	sed 's|@LIBEXEC@|$(PWD)/target/release|g' data/vie.xml.in \
 		> $(HOME)/.local/share/ibus/component/vie.xml
 	@echo "Installed user-local. Run: ibus restart"
+
+# Full user setup: install + configure GNOME input sources + restart IBus
+# Replaces current input sources with: US keyboard + ibus-vie
+setup-user: install-user
+	ibus write-cache
+	env DCONF_PROFILE=ibus dconf write /desktop/ibus/general/preload-engines "['ibus-vie']"
+	gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'ibus-vie')]"
+	ibus restart
+	@echo "Done. Use Super+Space to switch between US and ibus-vie."

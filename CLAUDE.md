@@ -19,7 +19,10 @@ cargo fmt --all                # format
 cargo clippy --all-targets --all-features -- -D warnings  # lint
 make check                     # fmt + lint + test
 
-# Dev install (no root needed) — ALWAYS run full sequence:
+# First-time setup (no root needed) — installs + configures GNOME:
+make setup-user                # build + install + configure dconf/gsettings + ibus restart
+
+# Dev rebuild — ALWAYS run full sequence:
 make install-user              # build release + install to ~/.local
 ibus write-cache               # refresh IBus component registry cache
 ibus restart                   # reload daemon with new binary
