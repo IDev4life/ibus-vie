@@ -2,8 +2,8 @@ use ibus_vie_im::Action;
 use tracing::debug;
 use zbus::object_server::SignalEmitter;
 
-use super::engine_impl::IbusEngineImpl;
-use super::ibus_text::{ibus_text_value, ibus_text_with_underline};
+use super::IbusEngineImpl;
+use super::text::{ibus_text_value, ibus_text_with_underline};
 
 pub async fn handle_preedit(
     engine: &mut IbusEngineImpl,

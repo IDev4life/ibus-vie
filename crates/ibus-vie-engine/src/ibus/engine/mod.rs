@@ -1,11 +1,13 @@
+mod output;
+mod props;
+mod text;
+
 use ibus_vie_im::{Engine, KeyEvent, TelexEngine, VniEngine};
 use tracing::{debug, info};
 use zbus::object_server::SignalEmitter;
 use zbus::zvariant::Value;
 
 use super::factory;
-use super::props;
-use super::signals;
 
 pub struct IbusEngineImpl {
     engine: Box<dyn Engine + Send + Sync>,
@@ -51,7 +53,7 @@ impl IbusEngineImpl {
         let has_alt = (state & (1 << 3)) != 0;
         if has_ctrl || has_alt {
             if !self.engine.preedit().is_empty() {
-                signals::commit_pending_preedit(self, &emitter).await;
+                output::commit_pending_preedit(self, &emitter).await;
             }
             self.engine.reset();
             return false;
@@ -60,13 +62,13 @@ impl IbusEngineImpl {
         let ev = match keyval {
             0xff08 => KeyEvent::backspace(),
             0xff1b => {
-                signals::hide_preedit(&emitter).await;
+                output::hide_preedit(&emitter).await;
                 self.engine.reset();
                 return false;
             }
             0xff0d => {
                 if !self.engine.preedit().is_empty() {
-                    signals::commit_pending_preedit(self, &emitter).await;
+                    output::commit_pending_preedit(self, &emitter).await;
                 }
                 self.engine.reset();
                 return false;
@@ -76,7 +78,7 @@ impl IbusEngineImpl {
         };
 
         let action = self.engine.key(ev);
-        signals::handle_preedit(self, &emitter, action, self.preedit_underline).await
+        output::handle_preedit(self, &emitter, action, self.preedit_underline).await
     }
 
     fn focus_in(&mut self) {
@@ -85,7 +87,7 @@ impl IbusEngineImpl {
 
     async fn focus_out(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
         if !self.engine.preedit().is_empty() {
-            signals::commit_pending_preedit(self, &emitter).await;
+            output::commit_pending_preedit(self, &emitter).await;
         }
         self.engine.reset();
         debug!("focus out");
@@ -93,7 +95,7 @@ impl IbusEngineImpl {
 
     async fn reset(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
         if !self.engine.preedit().is_empty() {
-            signals::hide_preedit(&emitter).await;
+            output::hide_preedit(&emitter).await;
         }
         self.engine.reset();
         debug!("engine reset");
@@ -142,7 +144,7 @@ impl IbusEngineImpl {
                 }
 
                 if !self.engine.preedit().is_empty() {
-                    signals::commit_pending_preedit(self, &emitter).await;
+                    output::commit_pending_preedit(self, &emitter).await;
                 }
 
                 self.method = new_method.to_string();

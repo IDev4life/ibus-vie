@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use crate::config::Config;
 use crate::error::EngineError;
-use crate::ibus::engine_impl::IbusEngineImpl;
+use crate::ibus::engine::IbusEngineImpl;
 use crate::ibus::service::IbusService;
 use tracing::info;
 use zbus::Connection;

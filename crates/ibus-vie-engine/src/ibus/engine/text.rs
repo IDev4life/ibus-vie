@@ -10,7 +10,7 @@ pub fn ibus_text_with_underline(text: &str, underline: u32) -> Value<'static> {
     let attr = StructureBuilder::new()
         .append_field(Value::Str("IBusAttribute".into()))
         .append_field(empty_dict.clone())
-        .append_field(Value::U32(1))        // type=1 (underline)
+        .append_field(Value::U32(1))         // type=1 (underline)
         .append_field(Value::U32(underline)) // value
         .append_field(Value::U32(0))         // start
         .append_field(Value::U32(text_len))  // end
@@ -40,9 +40,7 @@ pub fn ibus_text_with_underline(text: &str, underline: u32) -> Value<'static> {
     Value::Structure(ibus_text)
 }
 
-/// Build an IBusText variant for sending over DBus.
-///
-/// Format: `(sa{sv}sv)` = `("IBusText", {}, text, variant(IBusAttrList))`
+/// Build an IBusText variant for commit text (no underline attribute).
 pub fn ibus_text_value(text: &str) -> Value<'static> {
     let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
     let empty_arr = Value::Array(Array::new(&Signature::Variant));
