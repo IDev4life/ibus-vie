@@ -61,7 +61,7 @@ File: `~/.config/ibus-vie/config.toml` (optional, defaults apply if missing)
 
 ```toml
 method = "telex"       # telex | vni
-tone_style = "new"     # new (hòa) | old (hoà)
+input_mode = "preedit" # preedit (inline underline) | popup (floating window)
 ```
 
 ## Key design rule

@@ -8,8 +8,6 @@ use tracing::warn;
 pub struct Config {
     /// Default input method: "telex" or "vni"
     pub method: String,
-    /// Tone placement style: "new" (hòa) or "old" (hoà)
-    pub tone_style: String,
     /// Input mode: "preedit" (inline underline) or "popup" (floating candidate window)
     pub input_mode: String,
 }
@@ -18,7 +16,6 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             method: "telex".to_string(),
-            tone_style: "new".to_string(),
             input_mode: "preedit".to_string(),
         }
     }
