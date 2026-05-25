@@ -14,15 +14,23 @@ const FACTORY_PATH: &str = "/org/freedesktop/IBus/Factory";
 /// Updated by property_activate, read by factory on CreateEngine.
 static ACTIVE_METHOD: Mutex<Option<String>> = Mutex::new(None);
 
+/// Shared active input mode across all engine instances.
+static ACTIVE_INPUT_MODE: Mutex<Option<String>> = Mutex::new(None);
 
-/// Get the current active method (returns None if never set).
 pub fn get_active_method() -> Option<String> {
     ACTIVE_METHOD.lock().unwrap().clone()
 }
 
-/// Set the active method (called from property_activate).
 pub fn set_active_method(method: &str) {
     *ACTIVE_METHOD.lock().unwrap() = Some(method.to_string());
+}
+
+pub fn get_active_input_mode() -> Option<String> {
+    ACTIVE_INPUT_MODE.lock().unwrap().clone()
+}
+
+pub fn set_active_input_mode(mode: &str) {
+    *ACTIVE_INPUT_MODE.lock().unwrap() = Some(mode.to_string());
 }
 
 
@@ -75,8 +83,9 @@ impl EngineFactory {
         info!("creating engine '{}' at path {}", engine_name, path);
 
         let method = get_active_method().unwrap_or_else(|| self.config.method.clone());
+        let input_mode = get_active_input_mode().unwrap_or_else(|| self.config.input_mode.clone());
 
-        let engine = IbusEngineImpl::new(method);
+        let engine = IbusEngineImpl::new(method, input_mode);
 
         server
             .at(path.as_str(), engine)

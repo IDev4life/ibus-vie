@@ -6,24 +6,24 @@ const PROP_TYPE_RADIO: u32 = 2;
 const PROP_STATE_UNCHECKED: u32 = 0;
 const PROP_STATE_CHECKED: u32 = 1;
 
-/// Build the IBusPropList for the method selector menu.
-pub fn method_prop_list(active_method: &str) -> Value<'static> {
-    let telex_checked = if active_method == "telex" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
-    let vni_checked = if active_method == "vni" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
-
-    let telex_prop = ibus_property("method-telex", PROP_TYPE_RADIO, "Telex", telex_checked, None);
-    let vni_prop = ibus_property("method-vni", PROP_TYPE_RADIO, "VNI", vni_checked, None);
-    let sub_props = ibus_prop_list(&[telex_prop, vni_prop]);
-
-    let method_label = match active_method { "vni" => "VNI", _ => "Telex" };
-    let method_menu = ibus_property("method-menu", PROP_TYPE_MENU, method_label, 0, Some(sub_props));
-
-    ibus_prop_list(&[method_menu])
+/// Build the full IBusPropList (method menu + input mode menu).
+pub fn full_prop_list(active_method: &str, input_mode: &str) -> Value<'static> {
+    let method_menu = build_method_menu(active_method);
+    let mode_menu = build_mode_menu(input_mode);
+    ibus_prop_list(&[method_menu, mode_menu])
 }
 
 /// Build an updated IBusProperty for the method menu label.
 pub fn method_menu_property(active_method: &str) -> Value<'static> {
-    let label = match active_method { "vni" => "VNI", _ => "Telex" };
+    build_method_menu(active_method)
+}
+
+/// Build an updated IBusProperty for the input mode menu label.
+pub fn mode_menu_property(input_mode: &str) -> Value<'static> {
+    build_mode_menu(input_mode)
+}
+
+fn build_method_menu(active_method: &str) -> Value<'static> {
     let telex_checked = if active_method == "telex" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
     let vni_checked = if active_method == "vni" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
 
@@ -31,7 +31,20 @@ pub fn method_menu_property(active_method: &str) -> Value<'static> {
     let vni_prop = ibus_property("method-vni", PROP_TYPE_RADIO, "VNI", vni_checked, None);
     let sub_props = ibus_prop_list(&[telex_prop, vni_prop]);
 
+    let label = match active_method { "vni" => "VNI", _ => "Telex" };
     ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
+}
+
+fn build_mode_menu(input_mode: &str) -> Value<'static> {
+    let preedit_checked = if input_mode != "forward" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
+    let forward_checked = if input_mode == "forward" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
+
+    let preedit_prop = ibus_property("mode-preedit", PROP_TYPE_RADIO, "Preedit", preedit_checked, None);
+    let forward_prop = ibus_property("mode-forward", PROP_TYPE_RADIO, "Gõ trực tiếp", forward_checked, None);
+    let sub_props = ibus_prop_list(&[preedit_prop, forward_prop]);
+
+    let label = if input_mode == "forward" { "Gõ trực tiếp" } else { "Preedit" };
+    ibus_property("mode-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
 }
 
 fn ibus_prop_list(props: &[Value<'static>]) -> Value<'static> {

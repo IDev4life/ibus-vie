@@ -10,6 +10,8 @@ pub struct Config {
     pub method: String,
     /// Tone placement style: "new" (hòa) or "old" (hoà)
     pub tone_style: String,
+    /// Input mode: "preedit" or "forward"
+    pub input_mode: String,
 }
 
 impl Default for Config {
@@ -17,6 +19,7 @@ impl Default for Config {
         Self {
             method: "telex".to_string(),
             tone_style: "new".to_string(),
+            input_mode: "preedit".to_string(),
         }
     }
 }

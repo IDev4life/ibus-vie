@@ -29,6 +29,7 @@
   },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": false,
-    "git-workflow@IDev4life-marketplace": true
+    "git-workflow@IDev4life-marketplace": true,
+    "rust-analyzer-lsp@claude-plugins-official": true
   }
 }
