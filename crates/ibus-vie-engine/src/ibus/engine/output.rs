@@ -9,7 +9,6 @@ pub async fn handle_preedit(
     engine: &mut IbusEngineImpl,
     emitter: &SignalEmitter<'_>,
     action: Action,
-    underline: u32,
 ) -> bool {
     match action {
         Action::Update => {
@@ -18,7 +17,7 @@ pub async fn handle_preedit(
             let cursor_pos = preedit.chars().count() as u32;
             let _ = IbusEngineImpl::update_preedit_text(
                 emitter,
-                ibus_text_with_underline(&preedit, underline),
+                ibus_text_with_underline(&preedit),
                 cursor_pos,
                 true,
                 0,

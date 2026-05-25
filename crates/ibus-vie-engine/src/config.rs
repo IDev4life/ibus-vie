@@ -10,8 +10,6 @@ pub struct Config {
     pub method: String,
     /// Tone placement style: "new" (hòa) or "old" (hoà)
     pub tone_style: String,
-    /// Preedit underline style: "single" or "none"
-    pub preedit_underline: String,
 }
 
 impl Default for Config {
@@ -19,17 +17,11 @@ impl Default for Config {
         Self {
             method: "telex".to_string(),
             tone_style: "new".to_string(),
-            preedit_underline: "single".to_string(),
         }
     }
 }
 
 impl Config {
-    /// Returns 0 for "none", 1 for everything else (single underline).
-    pub fn preedit_underline_value(&self) -> u32 {
-        if self.preedit_underline == "none" { 0 } else { 1 }
-    }
-
     /// Load config from the standard path, falling back to defaults.
     pub fn load() -> Self {
         let path = config_path();

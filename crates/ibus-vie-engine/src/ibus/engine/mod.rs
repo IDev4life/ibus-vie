@@ -12,17 +12,16 @@ use super::factory;
 pub struct IbusEngineImpl {
     engine: Box<dyn Engine + Send + Sync>,
     method: String,
-    preedit_underline: u32,
 }
 
 impl IbusEngineImpl {
-    pub fn new(method: String, preedit_underline: u32) -> Self {
+    pub fn new(method: String) -> Self {
         let engine: Box<dyn Engine + Send + Sync> = match method.as_str() {
             "vni" => Box::new(VniEngine::new()),
             _ => Box::new(TelexEngine::new()),
         };
         info!("engine created with method: {}", method);
-        Self { engine, method, preedit_underline }
+        Self { engine, method }
     }
 
     pub fn engine(&self) -> &dyn Engine {
@@ -78,7 +77,7 @@ impl IbusEngineImpl {
         };
 
         let action = self.engine.key(ev);
-        output::handle_preedit(self, &emitter, action, self.preedit_underline).await
+        output::handle_preedit(self, &emitter, action).await
     }
 
     fn focus_in(&mut self) {
@@ -102,7 +101,7 @@ impl IbusEngineImpl {
     }
 
     async fn enable(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
-        let prop_list = props::method_prop_list(&self.method, self.preedit_underline);
+        let prop_list = props::method_prop_list(&self.method);
         match Self::register_properties(&emitter, prop_list).await {
             Ok(()) => debug!(method = %self.method, "engine enabled, properties registered"),
             Err(e) => tracing::error!("register_properties failed: {}", e),
@@ -126,8 +125,7 @@ impl IbusEngineImpl {
         prop_name: &str,
         prop_state: u32,
     ) {
-        // Only act on CHECKED state (1). IBus sends activate for both the
-        // newly-checked and the newly-unchecked radio items.
+        debug!(prop_name, prop_state, "property_activate");
         if prop_state != 1 {
             return;
         }
@@ -158,20 +156,6 @@ impl IbusEngineImpl {
                 let _ = Self::update_property(&emitter, updated_prop).await;
 
                 info!("switched method to {}", new_method);
-            }
-            "preedit-underline-single" => {
-                self.preedit_underline = 1;
-                factory::set_active_preedit_underline(1);
-                let updated = props::preedit_menu_property(1);
-                let _ = Self::update_property(&emitter, updated).await;
-                info!("preedit underline set to single");
-            }
-            "preedit-underline-none" => {
-                self.preedit_underline = 0;
-                factory::set_active_preedit_underline(0);
-                let updated = props::preedit_menu_property(0);
-                let _ = Self::update_property(&emitter, updated).await;
-                info!("preedit underline set to none");
             }
             _ => {}
         }
