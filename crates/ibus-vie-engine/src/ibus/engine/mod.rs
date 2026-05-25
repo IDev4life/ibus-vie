@@ -8,7 +8,7 @@ use zbus::object_server::SignalEmitter;
 use zbus::zvariant::Value;
 
 use super::factory;
-use crate::config;
+use crate::{config, update};
 
 pub struct IbusEngineImpl {
     engine: Box<dyn Engine + Send + Sync>,
@@ -107,7 +107,8 @@ impl IbusEngineImpl {
     }
 
     async fn enable(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
-        let prop_list = props::full_prop_list(&self.method, &self.input_mode);
+        update::spawn_check();
+        let prop_list = props::full_prop_list(&self.method, &self.input_mode, &update::version_label());
         match Self::register_properties(&emitter, prop_list).await {
             Ok(()) => debug!(method = %self.method, mode = %self.input_mode, "engine enabled, properties registered"),
             Err(e) => tracing::error!("register_properties failed: {}", e),

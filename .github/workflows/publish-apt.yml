@@ -1,0 +1,78 @@
+name: Publish APT Repository
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-apt:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: sudo apt-get install -y libdbus-1-dev pkg-config reprepro
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install cargo-deb
+        run: cargo install cargo-deb --locked
+
+      - name: Build .deb
+        run: make deb
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Import GPG signing key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          GPG_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/{print $5; exit}')
+          echo "GPG_ID=$GPG_ID" >> $GITHUB_ENV
+
+      - name: Update apt repository
+        run: |
+          DEB=$(ls target/debian/ibus-vie_*.deb)
+          mkdir -p pages/apt/conf
+
+          # reprepro distributions config
+          cat > pages/apt/conf/distributions << EOF
+          Origin: ibus-vie
+          Label: ibus-vie
+          Codename: stable
+          Architectures: amd64
+          Components: main
+          Description: ibus-vie Vietnamese input method
+          SignWith: $GPG_ID
+          EOF
+
+          # Add .deb to repo (reprepro handles Packages, Release, signing)
+          reprepro -b pages/apt includedeb stable "$DEB"
+
+          # Export public key for users
+          gpg --armor --export "$GPG_ID" > pages/KEY.gpg
+
+      - name: Commit and push gh-pages
+        run: |
+          cd pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "apt: add ibus-vie ${{ github.event.release.tag_name }}"
+          git push

@@ -1,16 +1,18 @@
 use zbus::zvariant::{Array, Dict, Signature, StructureBuilder, Value};
 
+const PROP_TYPE_NORMAL: u32 = 0;
 const PROP_TYPE_MENU: u32 = 3;
 const PROP_TYPE_RADIO: u32 = 2;
 
 const PROP_STATE_UNCHECKED: u32 = 0;
 const PROP_STATE_CHECKED: u32 = 1;
 
-/// Build the full IBusPropList (method menu + input mode menu).
-pub fn full_prop_list(active_method: &str, input_mode: &str) -> Value<'static> {
+/// Build the full IBusPropList (method menu + input mode menu + version label).
+pub fn full_prop_list(active_method: &str, input_mode: &str, version_label: &str) -> Value<'static> {
     let method_menu = build_method_menu(active_method);
     let mode_menu = build_mode_menu(input_mode);
-    ibus_prop_list(&[method_menu, mode_menu])
+    let version = build_version_prop(version_label);
+    ibus_prop_list(&[method_menu, mode_menu, version])
 }
 
 /// Build an updated IBusProperty for the method menu label.
@@ -33,6 +35,10 @@ fn build_method_menu(active_method: &str) -> Value<'static> {
 
     let label = match active_method { "vni" => "VNI", _ => "Telex" };
     ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
+}
+
+fn build_version_prop(label: &str) -> Value<'static> {
+    ibus_property_label("version", label)
 }
 
 fn build_mode_menu(input_mode: &str) -> Value<'static> {
@@ -60,6 +66,31 @@ fn ibus_prop_list(props: &[Value<'static>]) -> Value<'static> {
         .build()
         .expect("valid IBusPropList structure");
     Value::Structure(prop_list)
+}
+
+fn ibus_property_label(key: &str, label: &str) -> Value<'static> {
+    let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
+    let ibus_label = ibus_text(label);
+    let ibus_tooltip = ibus_text("");
+    let ibus_symbol = ibus_text("");
+    let sub = ibus_prop_list(&[]);
+
+    let prop = StructureBuilder::new()
+        .append_field(Value::Str("IBusProperty".into()))
+        .append_field(empty_dict)
+        .append_field(Value::Str(key.to_string().into()))
+        .append_field(Value::U32(PROP_TYPE_NORMAL))
+        .append_field(Value::Value(Box::new(ibus_label)))
+        .append_field(Value::Str("".into()))
+        .append_field(Value::Value(Box::new(ibus_tooltip)))
+        .append_field(Value::Bool(false))  // sensitive=false: display only
+        .append_field(Value::Bool(true))
+        .append_field(Value::U32(0))
+        .append_field(Value::Value(Box::new(sub)))
+        .append_field(Value::Value(Box::new(ibus_symbol)))
+        .build()
+        .expect("valid IBusProperty structure");
+    Value::Structure(prop)
 }
 
 fn ibus_property(

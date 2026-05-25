@@ -4,6 +4,7 @@ mod config;
 mod error;
 mod ibus;
 mod log;
+mod update;
 
 use clap::Parser;
 use tracing::info;
