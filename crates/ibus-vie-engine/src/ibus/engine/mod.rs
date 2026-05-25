@@ -208,6 +208,16 @@ impl IbusEngineImpl {
     pub async fn hide_preedit_text(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
 
     #[zbus(signal)]
+    pub async fn update_auxiliary_text(
+        emitter: &SignalEmitter<'_>,
+        text: Value<'_>,
+        visible: bool,
+    ) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    pub async fn hide_auxiliary_text(emitter: &SignalEmitter<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal)]
     pub async fn update_lookup_table(
         emitter: &SignalEmitter<'_>,
         table: Value<'_>,

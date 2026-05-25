@@ -1,30 +1,5 @@
 use zbus::zvariant::{Array, Dict, Signature, StructureBuilder, Value};
 
-/// Build an IBusLookupTable with a single candidate (for popup preedit display).
-pub fn ibus_lookup_table(preedit: &str) -> Value<'static> {
-    let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
-
-    let candidate = ibus_text_value(preedit);
-    let mut candidates = Array::new(&Signature::Variant);
-    candidates.append(Value::Value(Box::new(candidate))).expect("valid candidate");
-
-    let mut empty_labels = Array::new(&Signature::Variant);
-    empty_labels.append(Value::Value(Box::new(ibus_text_value("")))).expect("valid label");
-
-    let table = StructureBuilder::new()
-        .append_field(Value::Str("IBusLookupTable".into()))
-        .append_field(empty_dict)
-        .append_field(Value::U32(1))
-        .append_field(Value::U32(0))
-        .append_field(Value::Bool(false))
-        .append_field(Value::Bool(false))
-        .append_field(Value::I32(1))
-        .append_field(Value::Array(candidates))
-        .append_field(Value::Array(empty_labels))
-        .build()
-        .expect("valid IBusLookupTable structure");
-    Value::Structure(table)
-}
 
 /// Build an IBusText variant with an underline attribute.
 pub fn ibus_text_with_underline(text: &str) -> Value<'static> {
