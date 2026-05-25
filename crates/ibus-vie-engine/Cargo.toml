@@ -14,10 +14,11 @@ path = "src/main.rs"
 
 [package.metadata.deb]
 name = "ibus-vie"
-maintainer = "IDev4life"
+maintainer = "IDev4life <letuanthong350@gmail.com>"
 depends = "ibus"
 section = "utils"
 priority = "optional"
+maintainer-scripts = "debian/"
 assets = [
   ["target/release/ibus-vie-engine", "usr/libexec/ibus-engine-vie", "755"],
   ["target/release/ibus-vie-cli",    "usr/bin/ibus-vie-cli",         "755"],

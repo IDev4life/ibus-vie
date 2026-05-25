@@ -3,7 +3,7 @@ LIBEXEC_DIR ?= $(PREFIX)/libexec
 IBUS_DIR    ?= $(PREFIX)/share/ibus/component
 BIN_DIR     ?= $(PREFIX)/bin
 
-.PHONY: build install uninstall install-user setup-user test fmt lint clean
+.PHONY: build install uninstall install-user setup-user deb test fmt lint clean
 
 build:
 	cargo build --release
@@ -32,6 +32,15 @@ uninstall:
 	rm -f $(DESTDIR)$(BIN_DIR)/ibus-vie-cli
 	rm -f $(DESTDIR)$(IBUS_DIR)/vie.xml
 	-ibus write-cache --system 2>/dev/null || true
+
+# Build a .deb package (requires: cargo install cargo-deb)
+deb:
+	sed 's|@LIBEXEC@|/usr/libexec|g' data/vie.xml.in \
+		> crates/ibus-vie-engine/data/vie.xml
+	cargo build --release --workspace
+	cargo deb -p ibus-vie-engine --no-build
+	rm -f crates/ibus-vie-engine/data/vie.xml
+	@echo "Package built: $$(ls target/debian/ibus-vie_*.deb)"
 
 clean:
 	cargo clean
