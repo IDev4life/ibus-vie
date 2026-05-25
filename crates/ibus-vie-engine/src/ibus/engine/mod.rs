@@ -8,6 +8,7 @@ use zbus::object_server::SignalEmitter;
 use zbus::zvariant::Value;
 
 use super::factory;
+use crate::config;
 
 pub struct IbusEngineImpl {
     engine: Box<dyn Engine + Send + Sync>,
@@ -156,6 +157,7 @@ impl IbusEngineImpl {
                     _ => Box::new(TelexEngine::new()),
                 };
                 factory::set_active_method(new_method);
+                config::save(new_method, &self.input_mode);
 
                 let updated_prop = props::method_menu_property(new_method);
                 let _ = Self::update_property(&emitter, updated_prop).await;
@@ -176,6 +178,7 @@ impl IbusEngineImpl {
 
                 self.input_mode = new_mode.to_string();
                 factory::set_active_input_mode(new_mode);
+                config::save(&self.method, new_mode);
 
                 let updated_prop = props::mode_menu_property(new_mode);
                 let _ = Self::update_property(&emitter, updated_prop).await;

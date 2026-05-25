@@ -1,9 +1,9 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tracing::warn;
 
 /// Application configuration loaded from ~/.config/ibus-vie/config.toml
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Config {
     /// Default input method: "telex" or "vni"
@@ -42,6 +42,27 @@ impl Config {
                 Self::default()
             }
         }
+    }
+}
+
+/// Persist method and input_mode to config.toml.
+/// Called when user switches via IBus property menu — updates default for future sessions.
+pub fn save(method: &str, input_mode: &str) {
+    let path = config_path();
+    if let Some(parent) = path.parent() {
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            warn!("failed to create config dir: {}", e);
+            return;
+        }
+    }
+    let cfg = Config { method: method.to_string(), input_mode: input_mode.to_string() };
+    match toml::to_string_pretty(&cfg) {
+        Ok(content) => {
+            if let Err(e) = std::fs::write(&path, content) {
+                warn!("failed to write config: {}", e);
+            }
+        }
+        Err(e) => warn!("failed to serialize config: {}", e),
     }
 }
 
