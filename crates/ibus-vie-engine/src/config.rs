@@ -10,7 +10,7 @@ pub struct Config {
     pub method: String,
     /// Tone placement style: "new" (hòa) or "old" (hoà)
     pub tone_style: String,
-    /// Input mode: "preedit" or "forward"
+    /// Input mode: "preedit" (inline underline) or "popup" (floating candidate window)
     pub input_mode: String,
 }
 

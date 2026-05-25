@@ -36,14 +36,14 @@ fn build_method_menu(active_method: &str) -> Value<'static> {
 }
 
 fn build_mode_menu(input_mode: &str) -> Value<'static> {
-    let preedit_checked = if input_mode != "forward" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
-    let forward_checked = if input_mode == "forward" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
+    let preedit_checked = if input_mode != "popup" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
+    let popup_checked = if input_mode == "popup" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
 
     let preedit_prop = ibus_property("mode-preedit", PROP_TYPE_RADIO, "Preedit", preedit_checked, None);
-    let forward_prop = ibus_property("mode-forward", PROP_TYPE_RADIO, "Gõ trực tiếp", forward_checked, None);
-    let sub_props = ibus_prop_list(&[preedit_prop, forward_prop]);
+    let popup_prop = ibus_property("mode-popup", PROP_TYPE_RADIO, "Popup", popup_checked, None);
+    let sub_props = ibus_prop_list(&[preedit_prop, popup_prop]);
 
-    let label = if input_mode == "forward" { "Gõ trực tiếp" } else { "Preedit" };
+    let label = if input_mode == "popup" { "Popup" } else { "Preedit" };
     ibus_property("mode-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
 }
 

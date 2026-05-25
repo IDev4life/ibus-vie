@@ -19,8 +19,10 @@ cargo fmt --all                # format
 cargo clippy --all-targets --all-features -- -D warnings  # lint
 make check                     # fmt + lint + test
 
-# Dev install (no root needed)
-make install-user              # installs to ~/.local, then: ibus restart
+# Dev install (no root needed) — ALWAYS run full sequence:
+make install-user              # build release + install to ~/.local
+ibus write-cache               # refresh IBus component registry cache
+ibus restart                   # reload daemon with new binary
 
 # Debug FSM without IBus
 cargo run -p ibus-vie-cli -- --method telex
