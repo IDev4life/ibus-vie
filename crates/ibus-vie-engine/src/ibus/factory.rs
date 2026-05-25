@@ -33,7 +33,6 @@ pub fn set_active_input_mode(mode: &str) {
     *ACTIVE_INPUT_MODE.lock().unwrap() = Some(mode.to_string());
 }
 
-
 /// Register the engine factory with the DBus connection.
 ///
 /// IBus daemon will call CreateEngine on this factory when the user activates

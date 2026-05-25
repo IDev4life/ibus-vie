@@ -55,7 +55,10 @@ pub fn save(method: &str, input_mode: &str) {
             return;
         }
     }
-    let cfg = Config { method: method.to_string(), input_mode: input_mode.to_string() };
+    let cfg = Config {
+        method: method.to_string(),
+        input_mode: input_mode.to_string(),
+    };
     match toml::to_string_pretty(&cfg) {
         Ok(content) => {
             if let Err(e) = std::fs::write(&path, content) {

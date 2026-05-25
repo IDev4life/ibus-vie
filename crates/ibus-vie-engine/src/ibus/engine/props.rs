@@ -8,7 +8,11 @@ const PROP_STATE_UNCHECKED: u32 = 0;
 const PROP_STATE_CHECKED: u32 = 1;
 
 /// Build the full IBusPropList (method menu + input mode menu + version label).
-pub fn full_prop_list(active_method: &str, input_mode: &str, version_label: &str) -> Value<'static> {
+pub fn full_prop_list(
+    active_method: &str,
+    input_mode: &str,
+    version_label: &str,
+) -> Value<'static> {
     let method_menu = build_method_menu(active_method);
     let mode_menu = build_mode_menu(input_mode);
     let version = build_version_prop(version_label);
@@ -26,30 +30,65 @@ pub fn mode_menu_property(input_mode: &str) -> Value<'static> {
 }
 
 fn build_method_menu(active_method: &str) -> Value<'static> {
-    let telex_checked = if active_method == "telex" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
-    let vni_checked = if active_method == "vni" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
+    let telex_checked = if active_method == "telex" {
+        PROP_STATE_CHECKED
+    } else {
+        PROP_STATE_UNCHECKED
+    };
+    let vni_checked = if active_method == "vni" {
+        PROP_STATE_CHECKED
+    } else {
+        PROP_STATE_UNCHECKED
+    };
 
-    let telex_prop = ibus_property("method-telex", PROP_TYPE_RADIO, "Telex", telex_checked, None);
+    let telex_prop = ibus_property(
+        "method-telex",
+        PROP_TYPE_RADIO,
+        "Telex",
+        telex_checked,
+        None,
+    );
     let vni_prop = ibus_property("method-vni", PROP_TYPE_RADIO, "VNI", vni_checked, None);
     let sub_props = ibus_prop_list(&[telex_prop, vni_prop]);
 
-    let label = match active_method { "vni" => "VNI", _ => "Telex" };
+    let label = match active_method {
+        "vni" => "VNI",
+        _ => "Telex",
+    };
     ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
 }
 
 fn build_version_prop(label: &str) -> Value<'static> {
-    ibus_property_label("version", label)
+    ibus_property("version", PROP_TYPE_NORMAL, label, 0, None)
 }
 
 fn build_mode_menu(input_mode: &str) -> Value<'static> {
-    let preedit_checked = if input_mode != "popup" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
-    let popup_checked = if input_mode == "popup" { PROP_STATE_CHECKED } else { PROP_STATE_UNCHECKED };
+    let preedit_checked = if input_mode != "popup" {
+        PROP_STATE_CHECKED
+    } else {
+        PROP_STATE_UNCHECKED
+    };
+    let popup_checked = if input_mode == "popup" {
+        PROP_STATE_CHECKED
+    } else {
+        PROP_STATE_UNCHECKED
+    };
 
-    let preedit_prop = ibus_property("mode-preedit", PROP_TYPE_RADIO, "Underline", preedit_checked, None);
+    let preedit_prop = ibus_property(
+        "mode-preedit",
+        PROP_TYPE_RADIO,
+        "Underline",
+        preedit_checked,
+        None,
+    );
     let popup_prop = ibus_property("mode-popup", PROP_TYPE_RADIO, "Popup", popup_checked, None);
     let sub_props = ibus_prop_list(&[preedit_prop, popup_prop]);
 
-    let label = if input_mode == "popup" { "Popup" } else { "Underline" };
+    let label = if input_mode == "popup" {
+        "Popup"
+    } else {
+        "Underline"
+    };
     ibus_property("mode-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
 }
 
@@ -57,7 +96,9 @@ fn ibus_prop_list(props: &[Value<'static>]) -> Value<'static> {
     let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
     let mut props_array = Array::new(&Signature::Variant);
     for p in props {
-        props_array.append(Value::Value(Box::new(p.clone()))).expect("valid variant value");
+        props_array
+            .append(Value::Value(Box::new(p.clone())))
+            .expect("valid variant value");
     }
     let prop_list = StructureBuilder::new()
         .append_field(Value::Str("IBusPropList".into()))
@@ -66,31 +107,6 @@ fn ibus_prop_list(props: &[Value<'static>]) -> Value<'static> {
         .build()
         .expect("valid IBusPropList structure");
     Value::Structure(prop_list)
-}
-
-fn ibus_property_label(key: &str, label: &str) -> Value<'static> {
-    let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
-    let ibus_label = ibus_text(label);
-    let ibus_tooltip = ibus_text("");
-    let ibus_symbol = ibus_text("");
-    let sub = ibus_prop_list(&[]);
-
-    let prop = StructureBuilder::new()
-        .append_field(Value::Str("IBusProperty".into()))
-        .append_field(empty_dict)
-        .append_field(Value::Str(key.to_string().into()))
-        .append_field(Value::U32(PROP_TYPE_NORMAL))
-        .append_field(Value::Value(Box::new(ibus_label)))
-        .append_field(Value::Str("".into()))
-        .append_field(Value::Value(Box::new(ibus_tooltip)))
-        .append_field(Value::Bool(false))  // sensitive=false: display only
-        .append_field(Value::Bool(true))
-        .append_field(Value::U32(0))
-        .append_field(Value::Value(Box::new(sub)))
-        .append_field(Value::Value(Box::new(ibus_symbol)))
-        .build()
-        .expect("valid IBusProperty structure");
-    Value::Structure(prop)
 }
 
 fn ibus_property(

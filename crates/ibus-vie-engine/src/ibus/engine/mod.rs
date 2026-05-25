@@ -22,8 +22,15 @@ impl IbusEngineImpl {
             "vni" => Box::new(VniEngine::new()),
             _ => Box::new(TelexEngine::new()),
         };
-        info!("engine created with method: {}, mode: {}", method, input_mode);
-        Self { engine, method, input_mode }
+        info!(
+            "engine created with method: {}, mode: {}",
+            method, input_mode
+        );
+        Self {
+            engine,
+            method,
+            input_mode,
+        }
     }
 
     pub fn engine(&self) -> &dyn Engine {
@@ -108,9 +115,12 @@ impl IbusEngineImpl {
 
     async fn enable(&mut self, #[zbus(signal_emitter)] emitter: SignalEmitter<'_>) {
         update::spawn_check();
-        let prop_list = props::full_prop_list(&self.method, &self.input_mode, &update::version_label());
+        let prop_list =
+            props::full_prop_list(&self.method, &self.input_mode, &update::version_label());
         match Self::register_properties(&emitter, prop_list).await {
-            Ok(()) => debug!(method = %self.method, mode = %self.input_mode, "engine enabled, properties registered"),
+            Ok(()) => {
+                debug!(method = %self.method, mode = %self.input_mode, "engine enabled, properties registered")
+            }
             Err(e) => tracing::error!("register_properties failed: {}", e),
         }
     }
@@ -166,7 +176,11 @@ impl IbusEngineImpl {
                 info!("switched method to {}", new_method);
             }
             "mode-preedit" | "mode-popup" => {
-                let new_mode = if prop_name == "mode-popup" { "popup" } else { "preedit" };
+                let new_mode = if prop_name == "mode-popup" {
+                    "popup"
+                } else {
+                    "preedit"
+                };
 
                 if new_mode == self.input_mode {
                     return;

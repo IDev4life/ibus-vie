@@ -2,8 +2,8 @@ use ibus_vie_im::Action;
 use tracing::debug;
 use zbus::object_server::SignalEmitter;
 
-use super::IbusEngineImpl;
 use super::text::{ibus_text_value, ibus_text_with_underline};
+use super::IbusEngineImpl;
 
 pub async fn handle_preedit(
     engine: &mut IbusEngineImpl,
@@ -15,8 +15,12 @@ pub async fn handle_preedit(
             let preedit = engine.engine().preedit().to_string();
             debug!(preedit, "update");
             if engine.is_popup_mode() {
-                let _ = IbusEngineImpl::update_preedit_text(emitter, ibus_text_value(""), 0, false, 0).await;
-                let _ = IbusEngineImpl::update_auxiliary_text(emitter, ibus_text_value(&preedit), true).await;
+                let _ =
+                    IbusEngineImpl::update_preedit_text(emitter, ibus_text_value(""), 0, false, 0)
+                        .await;
+                let _ =
+                    IbusEngineImpl::update_auxiliary_text(emitter, ibus_text_value(&preedit), true)
+                        .await;
             } else {
                 let cursor_pos = preedit.chars().count() as u32;
                 let _ = IbusEngineImpl::update_preedit_text(

@@ -19,14 +19,14 @@ pub fn version_label() -> String {
     }
 }
 
-/// Spawn a one-shot background task to check GitHub for the latest release.
+/// Spawn a one-shot background thread to check GitHub for the latest release.
 /// Subsequent calls are no-ops (OnceLock already set).
 pub fn spawn_check() {
     if LATEST.get().is_some() {
         return;
     }
-    tokio::spawn(async {
-        let result = tokio::task::spawn_blocking(fetch_latest).await.ok().flatten();
+    std::thread::spawn(|| {
+        let result = fetch_latest();
         let _ = LATEST.set(result);
         debug!("update check complete: {:?}", LATEST.get());
     });

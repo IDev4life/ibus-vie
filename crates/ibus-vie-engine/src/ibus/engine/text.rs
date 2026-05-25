@@ -1,6 +1,5 @@
 use zbus::zvariant::{Array, Dict, Signature, StructureBuilder, Value};
 
-
 /// Build an IBusText variant with an underline attribute.
 pub fn ibus_text_with_underline(text: &str) -> Value<'static> {
     let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
@@ -9,10 +8,10 @@ pub fn ibus_text_with_underline(text: &str) -> Value<'static> {
     let attr = StructureBuilder::new()
         .append_field(Value::Str("IBusAttribute".into()))
         .append_field(empty_dict.clone())
-        .append_field(Value::U32(1))         // type=1 (underline)
-        .append_field(Value::U32(1))         // value
-        .append_field(Value::U32(0))         // start
-        .append_field(Value::U32(text_len))  // end
+        .append_field(Value::U32(1)) // type=1 (underline)
+        .append_field(Value::U32(1)) // value
+        .append_field(Value::U32(0)) // start
+        .append_field(Value::U32(text_len)) // end
         .build()
         .expect("valid IBusAttribute structure");
 
