@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/IDev4life/ibus-vie/compare/ibus-vie-v2.0.0...ibus-vie-v2.0.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **ci:** use -p flag instead of --bin to build workspace packages ([4e0af02](https://github.com/IDev4life/ibus-vie/commit/4e0af026b89eb3d573779ea20b485899f667cd84))
+
 ## [2.0.0](https://github.com/IDev4life/ibus-vie/compare/ibus-vie-v1.1.0...ibus-vie-v2.0.0) (2026-05-26)
 
 
