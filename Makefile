@@ -6,7 +6,7 @@ BIN_DIR     ?= $(PREFIX)/bin
 .PHONY: build install uninstall install-user setup-user deb test fmt lint clean
 
 build:
-	cargo build --release
+	cargo build --release --workspace
 
 test:
 	cargo test --workspace
