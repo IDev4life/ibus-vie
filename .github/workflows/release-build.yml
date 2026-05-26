@@ -3,6 +3,11 @@ name: Release Build
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.1.0)'
+        required: true
 
 permissions:
   contents: write
@@ -11,6 +16,7 @@ env:
   CARGO_TERM_COLOR: always
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.tag }}
 
 jobs:
   build:
@@ -52,7 +58,7 @@ jobs:
 
       - name: Package tar.gz
         env:
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ env.RELEASE_TAG }}
           ARCH: ${{ matrix.artifact_arch }}
         run: |
           TARGET_DIR=target/${{ matrix.target }}/release
@@ -82,7 +88,7 @@ jobs:
           ARCHIVE: ${{ env.ARCHIVE }}
           DEB: ${{ env.DEB }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "${{ env.RELEASE_TAG }}" \
             "$ARCHIVE" "$DEB" --clobber
 
   checksums:
@@ -92,7 +98,7 @@ jobs:
     steps:
       - name: Download release assets
         run: |
-          gh release download "${{ github.event.release.tag_name }}" \
+          gh release download "${{ env.RELEASE_TAG }}" \
             --pattern "*.tar.gz" --pattern "*.deb" --dir artifacts/
 
       - name: Generate SHA256SUMS
@@ -102,7 +108,7 @@ jobs:
 
       - name: Upload checksums
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "${{ env.RELEASE_TAG }}" \
             artifacts/SHA256SUMS.txt --clobber
 
   publish-apt:
@@ -122,7 +128,7 @@ jobs:
 
       - name: Download amd64 .deb from release
         run: |
-          gh release download "${{ github.event.release.tag_name }}" \
+          gh release download "${{ env.RELEASE_TAG }}" \
             --pattern "*amd64.deb" --dir artifacts/
 
       - name: Import GPG signing key
@@ -153,5 +159,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "apt: add ibus-vie ${{ github.event.release.tag_name }}"
+          git diff --cached --quiet || git commit -m "apt: add ibus-vie ${{ env.RELEASE_TAG }}"
           git push
