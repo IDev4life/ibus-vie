@@ -86,6 +86,14 @@ impl IbusEngineImpl {
                 return false;
             }
             kv if (0x20..=0x7e).contains(&kv) => KeyEvent::from_char(kv as u8 as char),
+            // Navigation keys: commit preedit so cursor movement is clean
+            0xff51 | 0xff52 | 0xff53 | 0xff54 | 0xff55 | 0xff56 | 0xff50 | 0xff57 => {
+                if !self.engine.preedit().is_empty() {
+                    output::commit_pending_preedit(self, &emitter).await;
+                }
+                self.engine.reset();
+                return false;
+            }
             _ => return false,
         };
 
