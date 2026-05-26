@@ -48,7 +48,7 @@ jobs:
           echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
 
       - name: Build
-        run: cargo build --release --bin ibus-vie-engine --bin ibus-vie-cli --target ${{ matrix.target }}
+        run: cargo build --release -p ibus-vie-engine -p ibus-vie-cli --target ${{ matrix.target }}
 
       - name: Package tar.gz
         env:
