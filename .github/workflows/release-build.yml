@@ -19,8 +19,23 @@ env:
   RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.tag }}
 
 jobs:
+  create-release:
+    name: Create GitHub Release (workflow_dispatch only)
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Create release
+        run: |
+          gh release create "${{ env.RELEASE_TAG }}" \
+            --title "${{ env.RELEASE_TAG }}" \
+            --notes-file CHANGELOG.md \
+            --latest
+
   build:
     name: Build ${{ matrix.target }}
+    needs: [create-release]
+    if: always() && !failure() && !cancelled()
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
