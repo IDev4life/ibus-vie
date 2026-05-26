@@ -10,6 +10,45 @@ Bộ gõ tiếng Việt cho Linux, thiết kế **Wayland-first**, tích hợp t
 
 ---
 
+## Cài đặt
+
+### Ubuntu / Debian (apt)
+
+```bash
+# 1. Thêm GPG key
+curl -fsSL https://idev4life.github.io/ibus-vie/KEY.gpg \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/ibus-vie.gpg
+
+# 2. Thêm apt source
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/ibus-vie.gpg] \
+https://idev4life.github.io/ibus-vie/apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/ibus-vie.list
+
+# 3. Cài đặt
+sudo apt update
+sudo apt install ibus-vie
+```
+
+### Cài từ .deb (tải thủ công)
+
+Tải file `.deb` mới nhất từ [Releases](https://github.com/IDev4life/ibus-vie/releases):
+
+```bash
+sudo apt install ./ibus-vie_*_amd64.deb
+```
+
+### Sau khi cài
+
+```bash
+ibus restart
+```
+
+Mở **Settings → Keyboard → Input Sources** → bấm **+** → chọn **Vietnamese** → chọn **ibus-vie**.
+
+Chuyển kiểu gõ (Telex/VNI) và input mode (preedit/popup) qua IBus property menu trên panel.
+
+---
+
 ## Thử nhanh
 
 ```bash
