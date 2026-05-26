@@ -49,14 +49,28 @@ fn build_method_menu(active_method: &str) -> Value<'static> {
         None,
         true,
     );
-    let vni_prop = ibus_property("method-vni", PROP_TYPE_RADIO, "VNI", vni_checked, None, true);
+    let vni_prop = ibus_property(
+        "method-vni",
+        PROP_TYPE_RADIO,
+        "VNI",
+        vni_checked,
+        None,
+        true,
+    );
     let sub_props = ibus_prop_list(&[telex_prop, vni_prop]);
 
     let label = match active_method {
         "vni" => "VNI",
         _ => "Telex",
     };
-    ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props), true)
+    ibus_property(
+        "method-menu",
+        PROP_TYPE_MENU,
+        label,
+        0,
+        Some(sub_props),
+        true,
+    )
 }
 
 fn build_version_prop(label: &str) -> Value<'static> {
@@ -83,7 +97,14 @@ fn build_mode_menu(input_mode: &str) -> Value<'static> {
         None,
         true,
     );
-    let popup_prop = ibus_property("mode-popup", PROP_TYPE_RADIO, "Popup", popup_checked, None, true);
+    let popup_prop = ibus_property(
+        "mode-popup",
+        PROP_TYPE_RADIO,
+        "Popup",
+        popup_checked,
+        None,
+        true,
+    );
     let sub_props = ibus_prop_list(&[preedit_prop, popup_prop]);
 
     let label = if input_mode == "popup" {

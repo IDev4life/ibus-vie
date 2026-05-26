@@ -49,8 +49,6 @@ fn extract_tag(json: &str) -> Option<String> {
     let start = json.find(key)? + key.len();
     let end = start + json[start..].find('"')?;
     let tag = &json[start..end];
-    let version = tag
-        .trim_start_matches("ibus-vie-")
-        .trim_start_matches('v');
+    let version = tag.trim_start_matches("ibus-vie-").trim_start_matches('v');
     Some(version.to_string())
 }
