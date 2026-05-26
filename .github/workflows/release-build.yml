@@ -90,6 +90,7 @@ jobs:
           DEB: ${{ env.DEB }}
         run: |
           gh release upload "${{ env.RELEASE_TAG }}" \
+            --repo "${{ github.repository }}" \
             "$ARCHIVE" "$DEB" --clobber
 
   checksums:
@@ -100,6 +101,7 @@ jobs:
       - name: Download release assets
         run: |
           gh release download "${{ env.RELEASE_TAG }}" \
+            --repo "${{ github.repository }}" \
             --pattern "*.tar.gz" --pattern "*.deb" --dir artifacts/
 
       - name: Generate SHA256SUMS
@@ -110,6 +112,7 @@ jobs:
       - name: Upload checksums
         run: |
           gh release upload "${{ env.RELEASE_TAG }}" \
+            --repo "${{ github.repository }}" \
             artifacts/SHA256SUMS.txt --clobber
 
   publish-apt:
@@ -130,6 +133,7 @@ jobs:
       - name: Download amd64 .deb from release
         run: |
           gh release download "${{ env.RELEASE_TAG }}" \
+            --repo "${{ github.repository }}" \
             --pattern "*amd64.deb" --dir artifacts/
 
       - name: Import GPG signing key
