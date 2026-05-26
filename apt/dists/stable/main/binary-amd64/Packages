@@ -1,0 +1,16 @@
+Package: ibus-vie
+Version: 1.0.0-1
+Architecture: amd64
+Homepage: https://github.com/IDev4life/ibus-vie
+Maintainer: IDev4life <letuanthong350@gmail.com>
+Installed-Size: 5378
+Depends: ibus
+Priority: optional
+Section: utils
+Filename: pool/main/i/ibus-vie/ibus-vie_1.0.0-1_amd64.deb
+Size: 1409812
+SHA256: 5df599a610adf26807ed1d61507bb9a8c79e40a9a5ab936aff6780853f6bea7c
+SHA1: 036c2b7243c421244e2884dc214c5090cc9171ce
+MD5sum: 20ddde237355403a8975a28c4e148429
+Description: IBus engine binary for Vietnamese input (ibus-vie)
+

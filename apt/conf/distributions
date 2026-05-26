@@ -1,0 +1,7 @@
+Origin: ibus-vie
+Label: ibus-vie
+Codename: stable
+Architectures: amd64
+Components: main
+Description: ibus-vie Vietnamese input method
+SignWith: E60D17E4E41FC4CB

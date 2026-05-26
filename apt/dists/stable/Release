@@ -1,0 +1,19 @@
+Origin: ibus-vie
+Label: ibus-vie
+Codename: stable
+Date: Tue, 26 May 2026 03:26:38 UTC
+Architectures: amd64
+Components: main
+Description: ibus-vie Vietnamese input method
+MD5Sum:
+ 205cb4b08ba1861fad44efa7f251aebe 519 main/binary-amd64/Packages
+ 4dacf099ff307fad187734935638e500 384 main/binary-amd64/Packages.gz
+ 182d19055c6f0466e8967948d4caa94b 115 main/binary-amd64/Release
+SHA1:
+ a8bbbb9d36b17282fcb80db1ac16fea8db6e711b 519 main/binary-amd64/Packages
+ 19bd672c5e0e035e8e1b0db1269cc856b1f0769c 384 main/binary-amd64/Packages.gz
+ f41bf6dec3d01a4c99a9e1649554e21c403cc1af 115 main/binary-amd64/Release
+SHA256:
+ 3a23b4b96d5fbe9145627009babec05ed34e4b9cfb9679c09c7a8f9a0f1738cd 519 main/binary-amd64/Packages
+ 38939e140fb664848ebcf3fb10a0c6049ffb29286ffe2f6fd5db13180bf3e03a 384 main/binary-amd64/Packages.gz
+ 8e42c1d9f9951336be844e32bf4b44db89f4578a232c8df12f0fdf2c878238e5 115 main/binary-amd64/Release

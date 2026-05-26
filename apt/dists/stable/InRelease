@@ -1,0 +1,38 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: ibus-vie
+Label: ibus-vie
+Codename: stable
+Date: Tue, 26 May 2026 03:26:38 UTC
+Architectures: amd64
+Components: main
+Description: ibus-vie Vietnamese input method
+MD5Sum:
+ 205cb4b08ba1861fad44efa7f251aebe 519 main/binary-amd64/Packages
+ 4dacf099ff307fad187734935638e500 384 main/binary-amd64/Packages.gz
+ 182d19055c6f0466e8967948d4caa94b 115 main/binary-amd64/Release
+SHA1:
+ a8bbbb9d36b17282fcb80db1ac16fea8db6e711b 519 main/binary-amd64/Packages
+ 19bd672c5e0e035e8e1b0db1269cc856b1f0769c 384 main/binary-amd64/Packages.gz
+ f41bf6dec3d01a4c99a9e1649554e21c403cc1af 115 main/binary-amd64/Release
+SHA256:
+ 3a23b4b96d5fbe9145627009babec05ed34e4b9cfb9679c09c7a8f9a0f1738cd 519 main/binary-amd64/Packages
+ 38939e140fb664848ebcf3fb10a0c6049ffb29286ffe2f6fd5db13180bf3e03a 384 main/binary-amd64/Packages.gz
+ 8e42c1d9f9951336be844e32bf4b44db89f4578a232c8df12f0fdf2c878238e5 115 main/binary-amd64/Release
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEL1u81YpOxmlI6Q/0i6+Rm3Jq4dMFAmoVEu8ACgkQi6+Rm3Jq
+4dOk8w//XJ3zpuB6gJKPamML/Jqiax4+uORf5Zyli8K4ciB14vVPQEMKxGPbQYvb
+0xmrH8u0CPWlC7XrvpzR9/CVgiEQQdYwBDl3m2Qonjtw1QLC8oJz0w1uCZMLdGg3
+xN0tymy3TukLXOVKspNgQBDWM6EV3Jc1v9s06YhcOBkGJrqNK+vTyOrzBYQJ+pls
++YYqayRVlxmbLSFNhcSfbjIbY4supTBO2tT+o2keugyu0xwZsw1rFAD4yacyJoEj
+nSoPuCwKo7ObhSbvIZYkVOxOkDnFuNvcSLx5GhcRylav5PuRfIf8lCChktIzUGXa
+sjjcM1PzGq23VNLiyuE+m/AcxzN6Uq04AQ9lBZVIcMlw2/IsYI32NVwQ5VEMNX5X
+rwSZXoVtHi2g0/HJADyuPD+7GptKezmngU7UKURp1DT1Gov9dkCBanKYsIa6AO8E
+xggqh82Up4XkY8SHct3zaVmrqEBLGL7ZQpZto69KzVefc4H0CzF6BeSiXyh4TXkV
+dEtPQCpVcKNfoggJQLDM3iBXkHrx1bNi+flfl9jragPVqwt9sOlRhLZ+RRpfmHEW
+mag0jHtAt0mahxym7ivrV4REtlbsakFCLne/lCbmqSKWsr9XkwB9qS+oEuB5/b3Y
+fj2Q2jSkXT80QwPxf+zQkyMe1GUjY+CG5PkEDBIj2cIfNGmx+vI=
+=aJdu
+-----END PGP SIGNATURE-----

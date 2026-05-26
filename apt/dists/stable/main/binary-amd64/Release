@@ -1,0 +1,5 @@
+Component: main
+Origin: ibus-vie
+Label: ibus-vie
+Architecture: amd64
+Description: ibus-vie Vietnamese input method
