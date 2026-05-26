@@ -6,7 +6,7 @@ Bộ gõ tiếng Việt cho Linux, thiết kế **Wayland-first**, tích hợp t
 
 ## Trạng thái dự án
 
-**Giai đoạn: Phase 1 — Core engine hoàn chỉnh.** FSM cho cả 3 kiểu gõ (Telex, VNI, VIQR) hoạt động đầy đủ. IBus engine binary biên dịch và chạy được qua DBus (`zbus`). CLI debug tool sẵn sàng. Configuration từ `~/.config/ibus-vie/config.toml`. Tiếp theo: kiểm thử tích hợp trên desktop thực tế và đóng gói.
+**Giai đoạn: Phase 3 — Đóng gói & tích hợp.** FSM cho 2 kiểu gõ (Telex, VNI) hoạt động đầy đủ. IBus engine binary biên dịch và chạy được qua DBus (`zbus`). CLI debug tool sẵn sàng. Chuyển đổi kiểu gõ và input mode qua IBus property menu. Configuration từ `~/.config/ibus-vie/config.toml`. Tiếp theo: kiểm thử tích hợp trên desktop thực tế và đóng gói.
 
 ---
 
@@ -25,9 +25,6 @@ cargo run -p ibus-vie-cli -- --method telex --input "tieengs"
 
 cargo run -p ibus-vie-cli -- --method vni --input "d9a6u"
 # → đâu
-
-cargo run -p ibus-vie-cli -- --method viqr --input "Vie^.t"
-# → Việt
 
 # Interactive mode — gõ trực tiếp, Ctrl+D thoát
 cargo run -p ibus-vie-cli -- --method telex
@@ -61,8 +58,8 @@ Với người dùng cuối, trải nghiệm lý tưởng là: cài một packag
 File: `~/.config/ibus-vie/config.toml` (tạo nếu cần, không bắt buộc)
 
 ```toml
-method = "telex"       # telex | vni | viqr
-tone_style = "new"     # new (hòa) | old (hoà)
+method = "telex"       # telex | vni
+input_mode = "preedit" # preedit (inline underline) | popup (floating window)
 ```
 
 ---
@@ -112,7 +109,7 @@ Giao tiếp với `ibus-daemon` qua DBus bằng crate `zbus` (Rust thuần) — 
 | `docs/SPEC.md`          | Đặc tả chức năng (goals / non-goals / hành vi)            |
 | `docs/ARCHITECTURE.md`  | Kiến trúc kỹ thuật, các thành phần                        |
 | `docs/SOURCE_LAYOUT.md` | **Cấu trúc Cargo workspace, ranh giới crate, cách debug** |
-| `docs/INPUT_METHODS.md` | Luật gõ Telex / VNI / VIQR                                |
+| `docs/INPUT_METHODS.md` | Luật gõ Telex / VNI                                       |
 | `docs/INSTALL.md`       | Hướng dẫn build và cài đặt                                |
 | `docs/WAYLAND.md`       | Ghi chú về Wayland & IBus                                 |
 | `docs/ROADMAP.md`       | Lộ trình phát triển theo giai đoạn                        |

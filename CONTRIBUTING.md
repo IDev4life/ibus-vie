@@ -4,8 +4,8 @@
 
 ## Đóng góp loại nào được hoan nghênh
 
-- **Báo lỗi gõ sai** — đặc biệt với từ tiếng Việt cụ thể. Kèm: kiểu gõ (Telex/VNI/VIQR), chuỗi phím gõ, kết quả thực tế, kết quả mong đợi.
-- **Test case bổ sung** — thêm dòng vào `tests/snapshot/telex.txt` (hoặc `vni.txt`, `viqr.txt`). Không cần biết Rust.
+- **Báo lỗi gõ sai** — đặc biệt với từ tiếng Việt cụ thể. Kèm: kiểu gõ (Telex/VNI), chuỗi phím gõ, kết quả thực tế, kết quả mong đợi.
+- **Test case bổ sung** — thêm dòng vào `tests/snapshot/telex.txt` (hoặc `vni.txt`). Không cần biết Rust.
 - **Fix cụ thể** với PR nhỏ, dễ review.
 - **Port packaging** sang distro chưa có.
 

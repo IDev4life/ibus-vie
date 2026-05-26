@@ -148,7 +148,7 @@ Dấu thanh đặt ở nguyên âm chính của vần. Quy tắc phổ biến:
    - **Kiểu cũ:** dấu trên nguyên âm đầu (vd: "hoà", "thuý").
    - **Kiểu mới:** dấu trên nguyên âm sau (vd: "hòa", "thúy").
 
-**Mặc định:** kiểu mới. Đổi sang kiểu cũ qua `tone_style = "old"` trong config.
+**Hiện tại:** `AccentStyle::Old` hardcoded trong cả hai engine (sản xuất kết quả kiểu mới "hòa" theo `vi` crate). Cấu hình `tone_style` chưa được implement.
 
 ---
 

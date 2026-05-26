@@ -69,7 +69,7 @@ File template: `data/vie.xml.in`, cài tại `/usr/share/ibus/component/vie.xml`
 <component>
   <name>org.freedesktop.IBus.Vie</name>
   <description>Vietnamese input method (ibus-vie)</description>
-  <exec>@LIBEXEC@/ibus-engine-vie --ibus</exec>
+  <exec>@LIBEXEC@/ibus-vie-engine --ibus</exec>
   <version>0.1.0</version>
   <author>dev1sme</author>
   <license>GPL-3.0-or-later</license>
@@ -78,32 +78,21 @@ File template: `data/vie.xml.in`, cài tại `/usr/share/ibus/component/vie.xml`
 
   <engines>
     <engine>
-      <name>vie-telex</name>
+      <name>ibus-vie</name>
       <language>vi</language>
       <license>GPL-3.0-or-later</license>
       <author>dev1sme</author>
       <layout>us</layout>
-      <longname>Vietnamese (ibus-vie — Telex)</longname>
-      <description>Vietnamese Telex input via ibus-vie</description>
-      <symbol>VI</symbol>
+      <longname>ibus-vie</longname>
+      <description>Vietnamese input via ibus-vie (Telex/VNI)</description>
+      <symbol>vi</symbol>
       <rank>50</rank>
-    </engine>
-    <engine>
-      <name>vie-vni</name>
-      <language>vi</language>
-      <license>GPL-3.0-or-later</license>
-      <author>dev1sme</author>
-      <layout>us</layout>
-      <longname>Vietnamese (ibus-vie — VNI)</longname>
-      <description>Vietnamese VNI input via ibus-vie</description>
-      <symbol>VI</symbol>
-      <rank>49</rank>
     </engine>
   </engines>
 </component>
 ```
 
-`@LIBEXEC@` được thay thế bởi Makefile tại thời điểm install (mặc định `/usr/libexec`).
+`@LIBEXEC@` được thay thế bởi Makefile tại thời điểm install (mặc định `/usr/libexec`). Chỉ đăng ký **một engine duy nhất** — người dùng chuyển kiểu gõ (Telex/VNI) qua IBus property menu tại runtime.
 
 ### 3.2. Engine executable
 
@@ -139,9 +128,17 @@ Chi tiết quy tắc xem `INPUT_METHODS.md`.
 
 ```rust
 pub trait Engine {
-    fn key(&mut self, ev: KeyEvent) -> Action;
-    fn reset(&mut self);
-    fn preedit(&self) -> &str;
+    // --- Customization points (phải implement) ---
+    fn buffer(&self) -> &Buffer;
+    fn buffer_mut(&mut self) -> &mut Buffer;
+
+    // --- Optional override ---
+    fn process_char(&mut self, c: char) -> Option<Action> { None }
+
+    // --- Default implementations ---
+    fn key(&mut self, ev: KeyEvent) -> Action;   // xử lý backspace, escape, commit triggers
+    fn reset(&mut self);                         // clear buffer
+    fn preedit(&self) -> &str;                   // buffer.composed()
     fn feed_str(&mut self, input: &str) -> String; // convenience cho test
 }
 
@@ -158,16 +155,20 @@ pub struct KeyEvent {
 }
 ```
 
+Trait `Engine` dùng **template method pattern**: mỗi engine chỉ cần implement `buffer()`, `buffer_mut()` và tùy chọn `process_char()` (VNI dùng để intercept digit keys). Phần common logic (backspace replay, escape, commit triggers) được cung cấp bởi default implementation.
+
 Tách FSM ra khỏi IBus glue cho phép viết unit test mà không cần chạy `ibus-daemon`.
 
 ### 3.4. Vietnamese text transformation
 
-Crate [`vi`](https://crates.io/crates/vi) (external, MIT license) xử lý:
+Crate [`vi`](https://crates.io/crates/vi) (version 0.8, external, MIT license) xử lý:
 
-- Tone placement (đặt dấu thanh) — mặc định kiểu mới ("hòa"), có config để đổi sang kiểu cũ ("hoà")
+- Tone placement (đặt dấu thanh)
 - Letter modification (circumflex, breve, horn, đ)
 - Undo on double-press
 - Telex & VNI definitions
+
+Accent style hiện tại hardcoded `AccentStyle::Old` trong cả hai engine.
 
 ---
 
@@ -201,10 +202,11 @@ Quy trình:
 1. Cài package → file `vie.xml` được đặt tại `/usr/share/ibus/component/`.
 2. Chạy `ibus write-cache --system` (hoặc `ibus restart`) để IBus đọc lại danh sách component.
 3. GNOME Settings (gnome-control-center) liệt kê các engine từ component này.
-4. Người dùng bấm Add → entry "Vietnamese (ibus-vie — Telex)" xuất hiện.
+4. Người dùng bấm Add → entry "ibus-vie" xuất hiện.
 5. Khi người dùng chọn input source này, IBus gọi `exec` trong XML → engine binary chạy.
 6. Engine binary đăng ký với `ibus-daemon` qua DBus session bus (sử dụng `zbus`).
 7. Mutter routes phím nhấn của ứng dụng đang focus về engine qua IBus.
+8. Người dùng chuyển kiểu gõ (Telex/VNI) và input mode (preedit/popup) qua IBus property menu trên panel.
 
 Cho dev: `make install-user` cài vào `~/.local/share/ibus/component/` để test không cần root.
 

@@ -89,10 +89,11 @@ ibus restart
 
 ### Bước 3. Add input source
 
-Bấm **+**, chọn **Vietnamese**, chọn một trong các entry:
+Bấm **+**, chọn **Vietnamese**, chọn entry:
 
-- Vietnamese (ibus-vie — Telex)
-- Vietnamese (ibus-vie — VNI)
+- ibus-vie
+
+Kiểu gõ (Telex/VNI) và input mode (preedit/popup) được chuyển qua IBus property menu (click vào icon trên panel).
 
 ### Bước 4. Chuyển input source
 
@@ -111,7 +112,7 @@ File: `~/.config/ibus-vie/config.toml` (tạo nếu cần, không bắt buộc �
 
 ```toml
 method = "telex"       # telex | vni
-tone_style = "new"     # new (hòa) | old (hoà)
+input_mode = "preedit" # preedit (inline underline) | popup (floating window)
 ```
 
 ---

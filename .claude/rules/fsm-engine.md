@@ -11,12 +11,23 @@ Any modification to `telex.rs`, `vni.rs`, `buffer.rs`, or `engine.rs` MUST inclu
 
 ## trait Engine contract
 
-All engines implement `trait Engine` with these methods:
+All engines implement `trait Engine` using the template method pattern:
 
-- `fn key(&mut self, ev: KeyEvent) -> Action` — core handler
+Required methods (must implement):
+
+- `fn buffer(&self) -> &Buffer` — access internal buffer
+- `fn buffer_mut(&mut self) -> &mut Buffer` — mutable access to internal buffer
+
+Optional override:
+
+- `fn process_char(&mut self, c: char) -> Option<Action>` — engine-specific key interception (e.g., VNI digit keys). Return `None` to fall through to default handling.
+
+Default implementations (provided by trait):
+
+- `fn key(&mut self, ev: KeyEvent) -> Action` — core handler (backspace replay, escape, commit triggers)
 - `fn reset(&mut self)` — clear preedit
 - `fn preedit(&self) -> &str` — current composed text
-- `fn feed_str(&mut self, input: &str) -> String` — default impl: feed chars, return committed + preedit (used in tests)
+- `fn feed_str(&mut self, input: &str) -> String` — feed chars, return committed + preedit (used in tests)
 
 Return values:
 

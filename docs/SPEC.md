@@ -65,7 +65,7 @@ Mặc định: tổ hợp phím chuyển giữa "gõ tiếng Việt" và "gõ th
 
 > "Tôi quen Telex ở máy, VNI ở chỗ làm. Tôi muốn đổi nhanh giữa hai kiểu."
 
-Cách giải quyết: hai entry IBus riêng biệt ("Vietnamese (ibus-vie — Telex)", "Vietnamese (ibus-vie — VNI)"), người dùng add cả hai và đổi qua phím tắt input source của hệ thống (`Super+Space` trên GNOME mặc định).
+Cách giải quyết: một engine duy nhất "ibus-vie" đăng ký với IBus. Người dùng chuyển kiểu gõ qua IBus property menu (click vào icon trên panel → chọn Telex/VNI). Lựa chọn được lưu vào `~/.config/ibus-vie/config.toml` cho lần khởi động sau.
 
 ---
 

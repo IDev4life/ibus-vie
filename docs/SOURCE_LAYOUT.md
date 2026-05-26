@@ -94,17 +94,16 @@ Engines chỉ là thin wrapper: push char vào `vi::IncrementalBuffer`, xử lý
 
 ```rust
 pub trait Engine {
-    /// Đẩy một phím vào engine. Trả về Action mô tả việc cần làm.
-    fn key(&mut self, ev: KeyEvent) -> Action;
+    // --- Customization points ---
+    fn buffer(&self) -> &Buffer;
+    fn buffer_mut(&mut self) -> &mut Buffer;
+    fn process_char(&mut self, c: char) -> Option<Action> { None }
 
-    /// Reset preedit (khi focus chuyển, khi user gõ Esc, ...).
-    fn reset(&mut self);
-
-    /// Lấy preedit hiện tại để hiển thị.
-    fn preedit(&self) -> &str;
-
-    /// Feed full string, return committed + preedit (convenience cho test).
-    fn feed_str(&mut self, input: &str) -> String;
+    // --- Default implementations (common boilerplate) ---
+    fn key(&mut self, ev: KeyEvent) -> Action;   // backspace replay, escape, commit triggers
+    fn reset(&mut self);                         // clear buffer
+    fn preedit(&self) -> &str;                   // buffer.composed()
+    fn feed_str(&mut self, input: &str) -> String; // convenience cho test
 }
 
 pub enum Action {
@@ -114,7 +113,7 @@ pub enum Action {
 }
 ```
 
-Trait `Engine` chính là **điểm tách**. `ibus-vie-engine` chỉ làm việc với `dyn Engine` — không quan tâm Telex hay VNI. Thêm kiểu gõ mới = thêm một file impl `Engine`, không sửa engine binary.
+Trait `Engine` dùng template method pattern. Engines chỉ cần implement `buffer()`, `buffer_mut()`, và tùy chọn `process_char()` (VNI dùng để intercept digit keys). `ibus-vie-engine` chỉ làm việc với `dyn Engine` — không quan tâm Telex hay VNI. Thêm kiểu gõ mới = thêm một file impl `Engine`, không sửa engine binary.
 
 ### 3.2. `crates/ibus-vie-engine/` — IBus binary
 
@@ -124,13 +123,19 @@ crates/ibus-vie-engine/
 └── src/
     ├── main.rs              # entry: parse CLI, init log, chạy event loop
     ├── ibus/
-    │   ├── mod.rs
+    │   ├── mod.rs           # run() — connect + register factory
     │   ├── connection.rs    # mở session DBus tới ibus-daemon
     │   ├── factory.rs       # implement IBus EngineFactory interface
-    │   └── engine_impl.rs   # implement IBus Engine interface (process_key_event, ...)
-    ├── config.rs            # đọc ~/.config/ibus-vie/config.toml
+    │   ├── service.rs       # implement IBus.Service (Destroy)
+    │   └── engine/
+    │       ├── mod.rs       # IbusEngineImpl: process_key_event, focus, enable, props
+    │       ├── output.rs    # preedit/commit DBus signal helpers
+    │       ├── props.rs     # IBus property menu (method/mode switching)
+    │       └── text.rs      # IBusText struct builders
+    ├── config.rs            # đọc/ghi ~/.config/ibus-vie/config.toml
+    ├── update.rs            # background version check (GitHub releases)
     ├── log.rs               # cấu hình tracing
-    └── error.rs             # enum Error + thiserror
+    └── error.rs             # enum EngineError + thiserror
 ```
 
 **Flow chính của `main.rs`:**
@@ -201,7 +206,7 @@ members = [
 ]
 
 [workspace.package]
-version       = "0.1.0"
+version       = "1.0.0"
 edition       = "2021"
 rust-version  = "1.95"
 license       = "GPL-3.0-or-later"
@@ -216,7 +221,7 @@ serde             = { version = "1", features = ["derive"] }
 toml              = "1.1"
 clap              = { version = "4", features = ["derive"] }
 thiserror         = "2"
-insta             = "1"
+vi                = "0.8"
 ```
 
 ---
@@ -295,23 +300,15 @@ Vieetj Nam      Việt Nam
 Có một test Rust duy nhất đọc file này và check từng dòng:
 
 ```rust
-// crates/ibus-vie-im/tests/snapshot_telex.rs
+// crates/ibus-vie-im/tests/snapshot.rs
 #[test]
-fn telex_snapshot() {
-    let text = include_str!("../../../tests/snapshot/telex.txt");
-    let mut engine = ibus_vie_im::TelexEngine::new();
-    for (lineno, line) in text.lines().enumerate() {
-        let line = line.split('#').next().unwrap().trim_end();
-        if line.is_empty() { continue; }
-        let (input, expected) = line.split_once('\t')
-            .unwrap_or_else(|| panic!("line {}: missing tab", lineno + 1));
-        let actual = engine.feed_str(input.trim());
-        assert_eq!(actual, expected.trim(),
-            "line {}: input {:?}", lineno + 1, input);
-        engine.reset();
-    }
+fn snapshot_telex() {
+    let path = snapshot_dir().join("telex.txt");
+    run_snapshot(&path, || Box::new(TelexEngine::new()));
 }
 ```
+
+`run_snapshot` đọc file, skip comments/empty, split từng dòng bằng TAB, gọi `engine.feed_str(input)` và so sánh với expected. Mỗi dòng tạo engine mới để đảm bảo test độc lập.
 
 Người báo lỗi gõ sai chỉ cần mở `tests/snapshot/telex.txt`, thêm dòng `chuỗi-gõ<TAB>kết-quả-đúng`, mở PR. Không cần viết Rust. Đây là "test as documentation".
 

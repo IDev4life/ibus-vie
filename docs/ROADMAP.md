@@ -32,7 +32,7 @@
 **Hoàn thành.**
 
 - [x] FSM VNI với snapshot tests.
-- [x] Component XML mở rộng cho cả 2 engine (vie-telex, vie-vni).
+- [x] Chỉ đăng ký một engine duy nhất (`ibus-vie`), chuyển method qua property menu.
 - [x] CLI debug tool hỗ trợ cả 2 method.
 - [x] Tài liệu `INPUT_METHODS.md` cập nhật theo behavior thực tế.
 
@@ -40,6 +40,11 @@
 
 ## Phase 3 — Đóng gói & kiểm thử tích hợp (đang thực hiện)
 
+- [x] IBus property menu: chuyển Telex/VNI và preedit/popup tại runtime.
+- [x] Config persist: lưu lựa chọn method/mode vào `config.toml`.
+- [x] Background update checker (GitHub releases).
+- [x] Popup mode (auxiliary text) bên cạnh preedit mode.
+- [x] Navigation keys (arrows, Home, End, PgUp, PgDn) commit preedit.
 - [ ] Kiểm thử tích hợp thực tế với `ibus-daemon` trên desktop.
 - [ ] Debian package, test trên Ubuntu 24.04+.
 - [ ] RPM spec, test trên Fedora hiện hành.
@@ -61,7 +66,9 @@
 
 ## Sau v1.0 — các hướng có thể đi
 
+- **VIQR** — kiểu gõ thứ 3, ít phổ biến hơn nhưng có nhu cầu.
 - **Wayland input-method-v2 client trực tiếp** — bypass IBus, hỗ trợ sway/Hyprland/Niri.
+- **Cấu hình tone_style** — cho phép đổi kiểu cũ ("hoà") / kiểu mới ("hòa") qua config.
 - **Tùy biến phím dấu** — cho phép người dùng custom bảng phím Telex.
 - **Macro / abbreviations** — gõ tắt cụm từ.
 - **Từ điển gợi ý** — gõ "vn" → "Việt Nam".
