@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/IDev4life/ibus-vie/compare/ibus-vie-v2.0.1...ibus-vie-v2.0.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* **ci:** generate vie.xml in crates/ibus-vie-engine/data/ for cargo-deb ([d8789ea](https://github.com/IDev4life/ibus-vie/commit/d8789ea27038822817e5a11134fe5941584eed0f))
+
 ## [2.0.1](https://github.com/IDev4life/ibus-vie/compare/ibus-vie-v2.0.0...ibus-vie-v2.0.1) (2026-05-26)
 
 

@@ -486,11 +486,11 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "ibus-vie"
-version = "2.0.1"
+version = "2.0.2"
 
 [[package]]
 name = "ibus-vie-cli"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "clap",
  "ibus-vie-im",
@@ -498,7 +498,7 @@ dependencies = [
 
 [[package]]
 name = "ibus-vie-engine"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "clap",
  "ibus-vie-im",
@@ -513,7 +513,7 @@ dependencies = [
 
 [[package]]
 name = "ibus-vie-im"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "insta",
  "vi",
