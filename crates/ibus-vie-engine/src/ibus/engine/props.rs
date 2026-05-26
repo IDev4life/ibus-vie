@@ -47,19 +47,20 @@ fn build_method_menu(active_method: &str) -> Value<'static> {
         "Telex",
         telex_checked,
         None,
+        true,
     );
-    let vni_prop = ibus_property("method-vni", PROP_TYPE_RADIO, "VNI", vni_checked, None);
+    let vni_prop = ibus_property("method-vni", PROP_TYPE_RADIO, "VNI", vni_checked, None, true);
     let sub_props = ibus_prop_list(&[telex_prop, vni_prop]);
 
     let label = match active_method {
         "vni" => "VNI",
         _ => "Telex",
     };
-    ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
+    ibus_property("method-menu", PROP_TYPE_MENU, label, 0, Some(sub_props), true)
 }
 
 fn build_version_prop(label: &str) -> Value<'static> {
-    ibus_property("version", PROP_TYPE_NORMAL, label, 0, None)
+    ibus_property("version", PROP_TYPE_NORMAL, label, 0, None, true)
 }
 
 fn build_mode_menu(input_mode: &str) -> Value<'static> {
@@ -80,8 +81,9 @@ fn build_mode_menu(input_mode: &str) -> Value<'static> {
         "Underline",
         preedit_checked,
         None,
+        true,
     );
-    let popup_prop = ibus_property("mode-popup", PROP_TYPE_RADIO, "Popup", popup_checked, None);
+    let popup_prop = ibus_property("mode-popup", PROP_TYPE_RADIO, "Popup", popup_checked, None, true);
     let sub_props = ibus_prop_list(&[preedit_prop, popup_prop]);
 
     let label = if input_mode == "popup" {
@@ -89,7 +91,7 @@ fn build_mode_menu(input_mode: &str) -> Value<'static> {
     } else {
         "Underline"
     };
-    ibus_property("mode-menu", PROP_TYPE_MENU, label, 0, Some(sub_props))
+    ibus_property("mode-menu", PROP_TYPE_MENU, label, 0, Some(sub_props), true)
 }
 
 fn ibus_prop_list(props: &[Value<'static>]) -> Value<'static> {
@@ -115,6 +117,7 @@ fn ibus_property(
     label: &str,
     state: u32,
     sub_props: Option<Value<'static>>,
+    sensitive: bool,
 ) -> Value<'static> {
     let empty_dict = Value::Dict(Dict::new(&Signature::Str, &Signature::Variant));
     let ibus_label = ibus_text(label);
@@ -130,7 +133,7 @@ fn ibus_property(
         .append_field(Value::Value(Box::new(ibus_label)))
         .append_field(Value::Str("".into()))
         .append_field(Value::Value(Box::new(ibus_tooltip)))
-        .append_field(Value::Bool(true))
+        .append_field(Value::Bool(sensitive))
         .append_field(Value::Bool(true))
         .append_field(Value::U32(state))
         .append_field(Value::Value(Box::new(sub)))

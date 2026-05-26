@@ -12,8 +12,8 @@ pub fn current() -> &'static str {
 /// Label shown in IBus property menu.
 pub fn version_label() -> String {
     match LATEST.get() {
-        Some(Some(latest)) if latest.trim_start_matches('v') != current() => {
-            format!("v{} ({} available)", current(), latest)
+        Some(Some(latest)) if latest.as_str() != current() => {
+            format!("v{} (v{} available)", current(), latest)
         }
         _ => format!("v{}", current()),
     }
@@ -48,5 +48,9 @@ fn extract_tag(json: &str) -> Option<String> {
     let key = "\"tag_name\":\"";
     let start = json.find(key)? + key.len();
     let end = start + json[start..].find('"')?;
-    Some(json[start..end].to_string())
+    let tag = &json[start..end];
+    let version = tag
+        .trim_start_matches("ibus-vie-")
+        .trim_start_matches('v');
+    Some(version.to_string())
 }

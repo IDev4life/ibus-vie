@@ -143,6 +143,14 @@ impl IbusEngineImpl {
         prop_state: u32,
     ) {
         debug!(prop_name, prop_state, "property_activate");
+
+        if prop_name == "version" {
+            let _ = std::process::Command::new("xdg-open")
+                .arg("https://github.com/IDev4life/ibus-vie")
+                .spawn();
+            return;
+        }
+
         if prop_state != 1 {
             return;
         }
