@@ -77,7 +77,8 @@ jobs:
 
       - name: Package deb
         run: |
-          sed 's|@LIBEXEC@|/usr/libexec|g' data/vie.xml.in > data/vie.xml
+          mkdir -p crates/ibus-vie-engine/data
+          sed 's|@LIBEXEC@|/usr/libexec|g' data/vie.xml.in > crates/ibus-vie-engine/data/vie.xml
           cargo deb -p ibus-vie-engine --no-build --target ${{ matrix.target }}
           DEB=$(find target/${{ matrix.target }}/debian/ -maxdepth 1 -name 'ibus-vie_*.deb')
           [[ -f "$DEB" ]] || { echo "::error::deb not found"; exit 1; }
