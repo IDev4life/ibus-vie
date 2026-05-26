@@ -104,3 +104,54 @@ jobs:
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
             artifacts/SHA256SUMS.txt --clobber
+
+  publish-apt:
+    name: Publish APT repository
+    runs-on: ubuntu-24.04
+    needs: checksums
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          path: pages
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install reprepro
+        run: sudo apt-get install -y reprepro
+
+      - name: Download amd64 .deb from release
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern "*amd64.deb" --dir artifacts/
+
+      - name: Import GPG signing key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          GPG_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/{print $5; exit}')
+          echo "GPG_ID=$GPG_ID" >> $GITHUB_ENV
+
+      - name: Update apt repository
+        run: |
+          DEB=$(ls artifacts/*.deb)
+          mkdir -p pages/apt/conf
+          cat > pages/apt/conf/distributions << EOF
+          Origin: ibus-vie
+          Label: ibus-vie
+          Codename: stable
+          Architectures: amd64
+          Components: main
+          Description: ibus-vie Vietnamese input method
+          SignWith: $GPG_ID
+          EOF
+          reprepro -b pages/apt includedeb stable "$DEB"
+          gpg --armor --export "$GPG_ID" > pages/KEY.gpg
+
+      - name: Commit and push gh-pages
+        run: |
+          cd pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "apt: add ibus-vie ${{ github.event.release.tag_name }}"
+          git push
