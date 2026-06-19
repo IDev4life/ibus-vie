@@ -35,7 +35,7 @@ jobs:
             cross: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: dtolnay/rust-toolchain@v1
         with:
@@ -121,7 +121,7 @@ jobs:
     needs: checksums
     steps:
       - name: Checkout gh-pages
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: gh-pages
           path: pages
