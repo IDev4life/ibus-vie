@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.1](https://github.com/IDev4life/ibus-vie/compare/ibus-vie-v1.0.0...ibus-vie-v1.0.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **ci:** add --repo flag to all gh commands for jobs without git checkout ([7fe20c4](https://github.com/IDev4life/ibus-vie/commit/7fe20c49ff83849d11d0ffacdc2af544d881e507))
+* **ci:** create GitHub Release when triggered via workflow_dispatch ([011bb91](https://github.com/IDev4life/ibus-vie/commit/011bb913b9ed500ac87b22af13f37492798cdc87))
+
+
+### Reverts
+
+* **ci:** remove create-release job, release-please handles release creation ([03a0bdd](https://github.com/IDev4life/ibus-vie/commit/03a0bddb5e0dedb6f87dad718c0a4f66dd36960d))
+
 ## [1.0.0](https://github.com/IDev4life/ibus-vie/releases/tag/ibus-vie-v1.0.0) (2026-05-26)
 
 ### Features
